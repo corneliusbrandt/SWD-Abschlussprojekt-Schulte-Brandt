@@ -1,0 +1,1 @@
+# SWD-Abschlussprojekt-Schulte-Brandt
