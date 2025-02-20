@@ -33,11 +33,12 @@ elif st.session_state["state"] == "state_create_mechanism":
         "Punkt": [f"{i}" for i in range(number_of_points)],
         "x-Koordinate": [0 for i in range(number_of_points)],
         "y-Koordinate": [0 for i in range(number_of_points)],
-        "Statisch?": [False for i in range(number_of_points)]
+        "Statisch": [False for i in range(number_of_points)],
+        "Kurbel" : [False for i in range(number_of_points)],
     }
 
     st.write("Bitte hier Punkte eingetragen")
-    table_points = st.data_editor(points, num_rows="dynamic") 
+    table_points = st.data_editor(points) 
 
     st.write("Bitte hier Verbindungen zwischen den Punkten eingetragen")
     links = {point: [False] * len(points["Punkt"]) for point in points["Punkt"]}
@@ -46,11 +47,25 @@ elif st.session_state["state"] == "state_create_mechanism":
     if st.button("Speichern"):
         mechanism.Mechanism(mechanism_name, table_points, table_links).store_data()
         st.success("Mechanismus gespeichert")
+        st.button("Mechanismus laden", on_click=go_to_state_load_mechanism)
 
     st.button("Zurück", on_click=go_to_state_start)
 
 elif st.session_state["state"] == "state_load_mechanism":
-    st.header("Mechanismus laden")
-    st.selectbox("Mechanismus auswählen",
-                  ["Mechanismus 1", "Mechanismus 2", "Mechanismus 3"])
+    st.header("Mechanismus simulieren oder bearbeiten")
+    mechanism_list = mechanism.Mechanism.find_all()
+    if len(mechanism_list) == 0:
+        st.warning("Keine Mechanismen gefunden")
+    else:
+        loaded_mechanism_name = st.selectbox("Mechanismus auswählen",
+                                        [mechanism.name for mechanism in mechanism_list])
+        loaded_mechanism_instance = mechanism.Mechanism.find_by_attribute("name", loaded_mechanism_name)
+        st.write(f"Name: {loaded_mechanism_instance.name}")
+        loaded_mechanism_instance.table_points = st.data_editor(loaded_mechanism_instance.table_points)
+        loaded_mechanism_instance.table_links = st.data_editor(loaded_mechanism_instance.table_links)
+        if st.button("Speichern"):
+            loaded_mechanism_instance.store_data()
+            st.success("Mechanismus gespeichert")
+        st.button("Löschen", on_click=loaded_mechanism_instance.delete_data)
+
     st.button("Zurück", on_click=go_to_state_start)
