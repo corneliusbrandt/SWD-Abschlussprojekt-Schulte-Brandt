@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import mechanism as mechanism
+import visualiser as visualiser
 
 
 
@@ -43,6 +44,11 @@ elif st.session_state["state"] == "state_create_mechanism":
     st.write("Bitte hier Verbindungen zwischen den Punkten eingetragen")
     links = {point: [False] * len(points["Punkt"]) for point in points["Punkt"]}
     table_links = st.data_editor(links, hide_index=False)
+
+    #st.write("Vorschau des Mechanismus")
+    #visualiser = visualiser.Visualiser(mechanism_name)
+    #fig = visualiser.draw_mechanism()
+    #st.pyplot(fig)
     
     if st.button("Speichern"):
         mechanism.Mechanism(mechanism_name, table_points, table_links).store_data()
@@ -60,12 +66,19 @@ elif st.session_state["state"] == "state_load_mechanism":
         loaded_mechanism_name = st.selectbox("Mechanismus auswählen",
                                         [mechanism.name for mechanism in mechanism_list])
         loaded_mechanism_instance = mechanism.Mechanism.find_by_attribute("name", loaded_mechanism_name)
+
         st.write(f"Name: {loaded_mechanism_instance.name}")
         loaded_mechanism_instance.table_points = st.data_editor(loaded_mechanism_instance.table_points)
-        loaded_mechanism_instance.table_links = st.data_editor(loaded_mechanism_instance.table_links)
+        loaded_mechanism_instance.table_links = st.data_editor(loaded_mechanism_instance.table_links, hide_index=False)
+
+        st.write("Visualisierung des Mechanismus")
+        visualiser = visualiser.Visualiser(loaded_mechanism_name)
+        visualiser.draw_mechanism()
+
         if st.button("Speichern"):
             loaded_mechanism_instance.store_data()
             st.success("Mechanismus gespeichert")
+            st.rerun()
         st.button("Löschen", on_click=loaded_mechanism_instance.delete_data)
 
     st.button("Zurück", on_click=go_to_state_start)
