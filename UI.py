@@ -45,10 +45,10 @@ elif st.session_state["state"] == "state_create_mechanism":
     links = {point: [False] * len(points["Punkt"]) for point in points["Punkt"]}
     table_links = st.data_editor(links, hide_index=False)
 
-    #st.write("Vorschau des Mechanismus")
-    #visualiser = visualiser.Visualiser(mechanism_name)
-    #fig = visualiser.draw_mechanism()
-    #st.pyplot(fig)
+    if st.button("Vorschau des Mechanismus"):
+        temporary_mechanism = mechanism.Mechanism(mechanism_name, table_points, table_links)
+        visualiser = visualiser.Visualiser(temporary_mechanism.name)
+        visualiser.draw_mechanism()
     
     if st.button("Speichern"):
         mechanism.Mechanism(mechanism_name, table_points, table_links).store_data()
