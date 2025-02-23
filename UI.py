@@ -4,7 +4,7 @@ import mechanism as mechanism
 import visualiser as visualiser
 
 
-
+st.set_page_config(layout="wide")
 
 if "state" not in st.session_state:
     st.session_state["state"] = "state_start"
@@ -45,11 +45,12 @@ elif st.session_state["state"] == "state_create_mechanism":
     links = {point: [False] * len(points["Punkt"]) for point in points["Punkt"]}
     table_links = st.data_editor(links, hide_index=False)
 
-    if st.button("Vorschau des Mechanismus"):
-        temporary_mechanism = mechanism.Mechanism(mechanism_name, table_points, table_links)
-        visualiser = visualiser.Visualiser(temporary_mechanism.name)
-        visualiser.draw_mechanism()
-    
+
+    #if st.button("Vorschau des Mechanismus"):
+        #temporary_mechanism = mechanism.Mechanism(mechanism_name, table_points, table_links)
+        #visualiser = visualiser.Visualiser(temporary_mechanism)
+        #visualiser.draw_mechanism()
+
     if st.button("Speichern"):
         mechanism.Mechanism(mechanism_name, table_points, table_links).store_data()
         st.success("Mechanismus gespeichert")
@@ -63,17 +64,20 @@ elif st.session_state["state"] == "state_load_mechanism":
     if len(mechanism_list) == 0:
         st.warning("Keine Mechanismen gefunden")
     else:
-        loaded_mechanism_name = st.selectbox("Mechanismus auswählen",
+        col1, col2 = st.columns([2, 1])
+        loaded_mechanism_name = col1.selectbox("Mechanismus auswählen",
                                         [mechanism.name for mechanism in mechanism_list])
         loaded_mechanism_instance = mechanism.Mechanism.find_by_attribute("name", loaded_mechanism_name)
 
-        st.write(f"Name: {loaded_mechanism_instance.name}")
-        loaded_mechanism_instance.table_points = st.data_editor(loaded_mechanism_instance.table_points)
-        loaded_mechanism_instance.table_links = st.data_editor(loaded_mechanism_instance.table_links, hide_index=False)
+        col1.write(f"Name: {loaded_mechanism_instance.name}")
+        loaded_mechanism_instance.table_points = col1.data_editor(loaded_mechanism_instance.table_points)
+        loaded_mechanism_instance.table_links = col1.data_editor(loaded_mechanism_instance.table_links, hide_index=False)
 
-        st.write("Visualisierung des Mechanismus")
-        visualiser = visualiser.Visualiser(loaded_mechanism_name)
-        visualiser.draw_mechanism()
+        col2.write("Visualisierung des Mechanismus")
+        with col2:
+            visualiser = visualiser.Visualiser(loaded_mechanism_name)
+            visualiser.draw_mechanism()
+            st.button("Als GIF speichern")
 
         if st.button("Speichern"):
             loaded_mechanism_instance.store_data()
