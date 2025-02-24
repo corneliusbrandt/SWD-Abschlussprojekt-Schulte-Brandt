@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 class EbeneKinematik:
-    def __init__(self, data):
+    def __init__(self, data, step_size=10):	
         """
         Initialisiert das Kinematik-System.
         :param data: Dictionary mit den Schlüsseln 'Punkt', 'X-Koordinate', 'Y-Koordinate', 'statisch', 'Kurbel' und 'Glieder'
@@ -20,6 +20,7 @@ class EbeneKinematik:
         print("Antrieb:", self.antrieb)
         self.glieder = np.array(data['Glieder'])
         print("Glieder Matrix:\n", self.glieder)
+        self.step_size = step_size
         
         self.check_system()
 
@@ -41,12 +42,14 @@ class EbeneKinematik:
         Berechnet die Längen der Glieder.
         :return: Array mit den Längen der Glieder
         """
-        gelenke = self.gelenke.reshape(-1, 1)
+        gelenke = self.gelenke[~(np.array(self.data['statisch']) & np.array(self.data['Kurbel']))].reshape(-1, 1)
         print("Gelenke:\n", gelenke)
-        L = np.dot(self.glieder, self.gelenke).reshape(2, 2)
+        L = np.dot(self.glieder, gelenke).reshape(2, 2)
         # print(L)
         l = np.linalg.norm(L, axis=1)
         # print(l)
+
+        return l
 
     def rotate_Point(self,angle):
         """
@@ -64,52 +67,59 @@ class EbeneKinematik:
         rotated_point = np.dot(rotation_matrix, translated_point) + rotations_koordinate
         return rotated_point
     
-    def solve(self, step_size):
+    def solve(self):
         """
         Löst das Kinematik-System, indem der Antriebspunkt von 0 bis 360 Grad in einem gegebenen Intervall rotiert wird.
         :param step_size: Schrittweite in Grad
+        :return: Array mit allen Punkten für jeden Winkel
         """
         initial_length = self.cal_length()
+        print("Initial Length:", initial_length)
         
         def objective_function(free_points):
-            self.gelenke[~self.data['statisch']] = free_points.reshape(-1, 2)
+            self.gelenke[~np.array(self.data['statisch'])] = free_points.reshape(-1, 2)
             lengths = self.cal_length()
+            print("Lengths:", lengths)
             error = np.sum((lengths - initial_length) ** 2)
             return error
         
-        for angle in range(0, 360, step_size):
+        all_points = []
+        
+        for angle in range(0, 360, self.step_size):
             rotated_point = self.rotate_Point(angle)
             self.gelenke[[i for i, p in enumerate(self.data['Punkt']) if p == self.antrieb][0]] = rotated_point * 2
             
-            free_points_initial = self.gelenke[~self.data['statisch']].flatten()
+            free_points_initial = self.gelenke[~np.array(self.data['statisch'])].flatten()
             result = minimize(objective_function, free_points_initial, method='BFGS')
             
             if result.success:
-                self.gelenke[~self.data['statisch']] = result.x.reshape(-1, 2)
+                self.gelenke[~np.array(self.data['statisch'])] = result.x.reshape(-1, 2)
             else:
                 print(f"Optimization failed at angle {angle} degrees.")
+            
+            all_points.append(self.gelenke.copy())
+        
+        return np.array(all_points)
       
     
     def visualize(self):
-        """
-        Visualisiert das Kinematik-System.
-        """
         fig, ax = plt.subplots()
-        ax.set_aspect('equal')
-        
-        # Plot points
-        for i, punkt in enumerate(self.data['Punkt']):
-            ax.plot(self.gelenke[i][0], self.gelenke[i][1], 'o', label=punkt)
-            ax.text(self.gelenke[i][0], self.gelenke[i][1], f' {punkt}', fontsize=12)
-        
-        # Plot links
-        for glied in self.glieder:
-            start_idx = np.where(glied == 1)[0][0]
-            end_idx = np.where(glied == -1)[0][0]
-            ax.plot([self.gelenke[start_idx][0], self.gelenke[end_idx][0]], 
-                    [self.gelenke[start_idx][1], self.gelenke[end_idx][1]], 'k-')
-        
-        ax.legend()
+        ax.set_xlim(-50, 50)
+        ax.set_ylim(-50, 50)
+        lines, = ax.plot([], [], 'o-', lw=2)
+
+        def init():
+            lines.set_data([], [])
+            return lines,
+
+        def update(frame):
+            all_points = self.solve()
+            x_data = all_points[frame][:, 0]
+            y_data = all_points[frame][:, 1]
+            lines.set_data(x_data, y_data)
+            return lines,
+
+        ani = animation.FuncAnimation(fig, update, frames=len(range(0, 360, self.step_size)), init_func=init, blit=True)
         plt.show()
 
 data = {
@@ -134,7 +144,7 @@ else:
 kinematik.cal_length()
 
 # Solve the kinematic system
-kinematik.solve(10)
+kinematik.solve()
 
 # Visualize the kinematic system
 kinematik.visualize()
