@@ -18,12 +18,16 @@ def go_to_state_create_mechanism():
 def go_to_state_load_mechanism():
     st.session_state["state"] = "state_load_mechanism"
 
+def go_to_solve_mechanism():
+    st.session_state["state"] = "state_solve_mechanism"
+
 
 
 if st.session_state["state"] == "state_start":
     st.title("Simulation der Kinematik eines ebenen Mechanismus")
     st.button("Neuen Mechanismus erstellen", on_click=go_to_state_create_mechanism)
     st.button("Mechanismus laden", on_click=go_to_state_load_mechanism)
+    st.button("Mechanismus lösen", on_click=go_to_solve_mechanism)
 
 elif st.session_state["state"] == "state_create_mechanism":
     st.header("Neuen Mechanismus erstellen")
@@ -86,3 +90,28 @@ elif st.session_state["state"] == "state_load_mechanism":
         st.button("Löschen", on_click=loaded_mechanism_instance.delete_data)
 
     st.button("Zurück", on_click=go_to_state_start)
+
+elif st.session_state["state"] == "state_solve_mechanism":
+        st.header("Mechanismus lösen")
+        mechanism_list = mechanism.Mechanism.find_all()
+        if len(mechanism_list) == 0:
+            st.warning("Keine Mechanismen gefunden")
+        else:
+            selected_mechanism_name = st.selectbox("Mechanismus auswählen", [mech.name for mech in mechanism_list])
+            selected_mechanism_instance = mechanism.Mechanism.find_by_attribute("name", selected_mechanism_name)
+
+            st.write(f"Name: {selected_mechanism_instance.name}")
+            st.write("Punkte:")
+            st.dataframe(selected_mechanism_instance.table_points)
+            st.write("Verbindungen:")
+            st.dataframe(selected_mechanism_instance.table_links)
+
+            if st.button("Mechanismus lösen"):
+                selected_mechanism_instance.solve_mechanism()
+                solution = selected_mechanism_instance.kinematics.solved_points
+                st.write("Lösung:")
+                st.write(solution)
+                visualiser = visualiser.Visualiser(selected_mechanism_instance)
+                visualiser.draw_solution(solution)
+
+        st.button("Zurück", on_click=go_to_state_start)

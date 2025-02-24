@@ -1,5 +1,6 @@
 import os
 from tinydb import TinyDB, Query
+from kinematicsSolver import EbeneKinematik
 
 class Mechanism:
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json')).table('mechanisms')
@@ -9,6 +10,7 @@ class Mechanism:
         self.name = name
         self.table_points = table_points
         self.table_links = table_links
+        self.kinematics = EbeneKinematik(table_points, table_links)
 
     def store_data(self)-> None:
         """Save the mechanism to the database"""
@@ -55,6 +57,12 @@ class Mechanism:
             return mechanisms if num_to_return > 1 else mechanisms[0]
         else:
             return None
+        
+    def solve_mechanism(self) -> EbeneKinematik:
+        """Solve the mechanism"""
+        self.kinematics.solve()
+        print("Solved points:", self.kinematics.solved_points)
+        return self.kinematics
 
 
 
