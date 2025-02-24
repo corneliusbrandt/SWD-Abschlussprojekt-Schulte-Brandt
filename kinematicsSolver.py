@@ -43,7 +43,7 @@ class EbeneKinematik:
         :return: Array mit den Längen der Glieder
         """
         gelenke = self.gelenke[~(np.array(self.data['statisch']) & np.array(self.data['Kurbel']))].reshape(-1, 1)
-        print("Gelenke:\n", gelenke)
+        # print("Gelenke:\n", gelenke)
         L = np.dot(self.glieder, gelenke).reshape(2, 2)
         # print(L)
         l = np.linalg.norm(L, axis=1)
@@ -61,8 +61,8 @@ class EbeneKinematik:
         rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
         antrieb_koordinate = np.array([self.data['X-Koordinate'][self.data['Punkt'].index(self.antrieb)], self.data['Y-Koordinate'][self.data['Punkt'].index(self.antrieb)]])
         rotations_koordinate = np.array([self.data['X-Koordinate'][self.data['Punkt'].index(self.rotations_Punkt)], self.data['Y-Koordinate'][self.data['Punkt'].index(self.rotations_Punkt)]])
-        print("Antrieb Koordinate vor Rotation:", antrieb_koordinate)
-        print("Rotations Koordinate:", rotations_koordinate)
+        # print("Antrieb Koordinate vor Rotation:", antrieb_koordinate)
+        # print("Rotations Koordinate:", rotations_koordinate)
         translated_point = antrieb_koordinate - rotations_koordinate
         rotated_point = np.dot(rotation_matrix, translated_point) + rotations_koordinate
         return rotated_point
@@ -74,12 +74,12 @@ class EbeneKinematik:
         :return: Array mit allen Punkten für jeden Winkel
         """
         initial_length = self.cal_length()
-        print("Initial Length:", initial_length)
+        # print("Initial Length:", initial_length)
         
         def objective_function(free_points):
             self.gelenke[~np.array(self.data['statisch'])] = free_points.reshape(-1, 2)
             lengths = self.cal_length()
-            print("Lengths:", lengths)
+            # print("Lengths:", lengths)
             error = np.sum((lengths - initial_length) ** 2)
             return error
         
@@ -87,7 +87,7 @@ class EbeneKinematik:
         
         for angle in range(0, 360, self.step_size):
             rotated_point = self.rotate_Point(angle)
-            self.gelenke[[i for i, p in enumerate(self.data['Punkt']) if p == self.antrieb][0]] = rotated_point * 2
+            self.gelenke[[i for i, p in enumerate(self.data['Punkt']) if p == self.antrieb][0]] = rotated_point
             
             free_points_initial = self.gelenke[~np.array(self.data['statisch'])].flatten()
             result = minimize(objective_function, free_points_initial, method='BFGS')
@@ -98,7 +98,7 @@ class EbeneKinematik:
                 print(f"Optimization failed at angle {angle} degrees.")
             
             all_points.append(self.gelenke.copy())
-        
+        print("All Points:\n", all_points)
         return np.array(all_points)
       
     
@@ -123,7 +123,7 @@ class EbeneKinematik:
         plt.show()
 
 data = {
-    'Punkt': ['A', 'B', 'C', 'D'],
+    'Punkt': ['A', 'B', 'C', 'D',],
     'X-Koordinate': [0, 10, -25, -30],
     'Y-Koordinate': [0, 35, 10, 0],
     'statisch': [True, False, False, True],
