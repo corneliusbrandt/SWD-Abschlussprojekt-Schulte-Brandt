@@ -50,6 +50,7 @@ class EbeneKinematik:
         :return: None
         """
         data = np.array(self.data_glieder['Glieder'], dtype=int)
+        print("Data:\n", data)
         num_points = len(data)
         connections = []
         
@@ -79,11 +80,14 @@ class EbeneKinematik:
         :return: Array mit den Längen der Glieder
         """
         gelenke = self.gelenke[~(np.array(self.data_gelenke['Statisch']) & np.array(self.data_gelenke['Kurbel']))].reshape(-1, 1)
-        # print("Gelenke:\n", gelenke)
-        L = np.dot(self.glieder, gelenke).reshape(2, 2)
-        # print(L)
+        print("Gelenke (cal_length):\n", gelenke)
+        L = np.dot(self.glieder, gelenke)
+        print("L",L)
+        # print("len",len(self.glieder))
+        L.reshape(len(self.glieder) // 2, 2)
+        print("L Reshape",L)
         l = np.linalg.norm(L, axis=1)
-        # print(l)
+        print("l",l)
 
         return l
 
@@ -179,33 +183,44 @@ class EbeneKinematik:
 
 
 
-#if __name__ == "__main__":
-#    data_gelenke = {
-#        'Punkt': ['A', 'B', 'C', 'D',],
-#        'X-Koordinate': [0, 10, -25, -30],
-#        'Y-Koordinate': [0, 35, 10, 0],
-#        'Statisch': [True, False, False, True],
-#        'Kurbel': [False, False, True, True]
-#    }
+# if __name__ == "__main__":
+    # data_gelenke = {
+    #     'Punkt': ['A', 'B', 'C', 'D', 'E'],
+    #     'x-Koordinate': [0, 10, -25, -30, -10],
+    #     'y-Koordinate': [0, 35, 10, 0, 20],
+    #     'Statisch': [True, False, False, True, False],
+    #     'Kurbel': [False, False, True, True, False]
+    # }
 
-#    data_glieder ={
-#        'Glieder': [[False, True, False], [False, False, True], [False, False, False]]
-#    }
+    # data_glieder = {
+    #     'Glieder': [[False, True, False, False], [False, False, True, True], [False, False, False, False],[False, False, False, False]]
+    # }
+    # data_gelenke = {
+    #     'Punkt': ['A', 'B', 'C', 'D'],
+    #     'x-Koordinate': [0, 10, -25, -30],
+    #     'y-Koordinate': [0, 35, 10, 0],
+    #     'Statisch': [True, False, False, True],
+    #     'Kurbel': [False, False, True, True]
+    # }
 
-    # Initialize the kinematics system
-#    kinematik = EbeneKinematik(data_gelenke, data_glieder)
+    # data_glieder = {
+    #     'Glieder': [[False, True, False], [False, False, True], [False, False, False]]
+    # }
 
-    # Check if the system is valid
-#    if kinematik.check_system():
-#        print("System is valid.")
-#    else:
-#       print("System is invalid.")
+    # # Initialize the kinematics system
+    # kinematik = EbeneKinematik(data_gelenke, data_glieder)
 
-    # Calculate the lengths of the links
-#   kinematik.cal_length()
+    # # Check if the system is valid
+    # if kinematik.check_system():
+    #     print("System is valid.")
+    # else:
+    #     print("System is invalid.")
 
-    # Solve the kinematic system
-#    kinematik.solve()
+    # # Calculate the lengths of the links
+    # kinematik.cal_length()
 
-    # Visualize the kinematic system
-#    kinematik.visualize()
+    # # Solve the kinematic system
+    # kinematik.solve()
+
+    # # Visualize the kinematic system
+    # kinematik.visualize()
