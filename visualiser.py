@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import mechanism as mechanism
 import streamlit as st
+import numpy as np
 import io
 import os
 
@@ -24,52 +25,92 @@ class Visualiser:
                     G.add_edge(p1, p2)
         return G
     
+    def calc_trajectory(self, solved_points):
+        # Calculates the trajectory of the point where the parameter "Bahnkurve" is set to True
+        point_index = 0
+        for n, p1 in enumerate(self.mechanism_to_visualise.table_points["Kurbel"]):
+            if p1:
+                point_index = n-1
+                trajectory = []
+                for point in solved_points:
+                    trajectory.append((point["x-Koordinate"][point_index], point["y-Koordinate"][point_index]))
+                return trajectory
+            else:
+                print(f"Point {n} is not a trajectory point.")
+        
+    
     def draw_mechanism(self):
+        #Function for drawing a static picture of the mechanism
         G = self.data_to_graph()
         pos = nx.get_node_attributes(G, 'pos')
+
         fig, ax = plt.subplots()
         nx.draw(G, pos, with_labels=True, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
         st.pyplot(fig)
 
     def animate_mechanism(self, solved_points):
+        # Function for animating the mechanism
+
+        # Calculate the radius for the circle around the rotation point
+        rotation_index = self.mechanism_to_visualise.kinematics.data_gelenke['Punkt'].index(self.mechanism_to_visualise.kinematics.rotations_Punkt)
+        antrieb_index = self.mechanism_to_visualise.kinematics.data_gelenke['Punkt'].index(self.mechanism_to_visualise.kinematics.antrieb)
+        radius = np.linalg.norm(self.mechanism_to_visualise.kinematics.gelenke[rotation_index] - self.mechanism_to_visualise.kinematics.gelenke[antrieb_index])
+
+        # Calculate the trajectory of the point where the parameter "Bahnkurve" is set to True
+        trajectory_array = self.calc_trajectory(solved_points)
+
         fig, ax = plt.subplots()
         ax.set_xlim(-50, 50)
         ax.set_ylim(-50, 50)
         ax.set_aspect('equal', adjustable='box')
         G = self.data_to_graph()
         pos = nx.get_node_attributes(G, 'pos')
-        nx.draw(G, pos, with_labels=True, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
+
+        # Add a circle around the rotation point
+        circle = plt.Circle(self.mechanism_to_visualise.kinematics.gelenke[rotation_index], radius, color='r', fill=False)
+        ax.add_artist(circle)
+
+        # Add the trajectory
+        if trajectory_array:
+            x, y = zip(*trajectory_array)
+            trajectory, = ax.plot(x, y, '-', lw=1, color='red')
+            ax.add_artist(trajectory)
+
+
+        #Draw the mechanism
+        nx.draw(G, pos, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
         
 
         def update_animation(frame):
-            # Here comes a function that updates the position of the nodes by getting them out of the database for each step
             ax.clear()
             ax.set_xlim(-50, 50)
             ax.set_ylim(-50, 50)
             ax.set_aspect('equal', adjustable='box')
+            ax.add_artist(circle)
+            if trajectory_array:
+                ax.add_artist(trajectory)
             for n, p1 in enumerate(solved_points[frame]["Punkt"]):
                 (x , y) = (solved_points[frame]["x-Koordinate"][n], solved_points[frame]["y-Koordinate"][n])
                 pos[p1] = (x, y)
-            nx.draw(G, pos, with_labels=True, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
+            nx.draw(G, pos, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
             
             
 
         mechanism_animation = animation.FuncAnimation(fig, update_animation, frames=len(solved_points), interval=20)
 
         #buffer = io.BytesIO()
-        #mechanism_animation.save(buffer, writer="pillow")
+        #mechanism_animation.save(buffer, writer="ffmpeg")
         #buffer.seek(0)
         downloads_path = os.path.join(os.path.expanduser("~"), "Downloads", "mechanism.gif")
         mechanism_animation.save(downloads_path, writer=animation.PillowWriter(fps=10))
-        print(f"Animation gespeichert unter: {downloads_path}")
-        st.image(downloads_path, use_column_width=True)
+        st.image(downloads_path, use_container_width=True)
         
 
 
 
-if __name__ == "__main__":
-    visualiser = Visualiser("Test1")
-    visualiser.draw_mechanism()
+#if __name__ == "__main__":
+    #visualiser = Visualiser("4 Punkt")
+    #visualiser.draw_mechanism()
 
 
         

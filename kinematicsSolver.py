@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 class EbeneKinematik:
-    def __init__(self, data_gelenke, data_glieder, step_size=5):	
+    def __init__(self, data_gelenke, data_glieder, step_size=1):	
         """
         Initialisiert das Kinematik-System.
         :param data: Dictionary mit den Schlüsseln 'Punkt', 'X-Koordinate', 'Y-Koordinate', 'Statisch', 'Kurbel' und 'Glieder'
