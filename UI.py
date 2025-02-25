@@ -46,7 +46,7 @@ elif st.session_state["state"] == "state_create_mechanism":
     table_points = st.data_editor(points) 
 
     st.write("Bitte hier Verbindungen zwischen den Punkten eingetragen")
-    links = {point: [False] * len(points["Punkt"]) for point in points["Punkt"]}
+    links = {f"{i}": [False] * number_of_points for i in range(number_of_points)}
     table_links = st.data_editor(links, hide_index=False)
 
 
@@ -63,7 +63,7 @@ elif st.session_state["state"] == "state_create_mechanism":
     st.button("Zurück", on_click=go_to_state_start)
 
 elif st.session_state["state"] == "state_load_mechanism":
-    st.header("Mechanismus simulieren oder bearbeiten")
+    st.header("Mechanismus bearbeiten")
     mechanism_list = mechanism.Mechanism.find_all()
     if len(mechanism_list) == 0:
         st.warning("Keine Mechanismen gefunden")
@@ -81,7 +81,6 @@ elif st.session_state["state"] == "state_load_mechanism":
         with col2:
             visualiser = visualiser.Visualiser(loaded_mechanism_name)
             visualiser.draw_mechanism()
-            st.button("Als GIF speichern")
 
         if st.button("Speichern"):
             loaded_mechanism_instance.store_data()
@@ -109,9 +108,9 @@ elif st.session_state["state"] == "state_solve_mechanism":
             if st.button("Mechanismus lösen"):
                 selected_mechanism_instance.solve_mechanism()
                 solution = selected_mechanism_instance.kinematics.solved_points
-                st.write("Lösung:")
-                st.write(solution)
-                visualiser = visualiser.Visualiser(selected_mechanism_instance)
-                visualiser.draw_solution(solution)
+                #st.write("Lösung:")
+                #st.write(solution)
+                visualiser = visualiser.Visualiser(selected_mechanism_name)
+                visualiser.animate_mechanism(solution)
 
         st.button("Zurück", on_click=go_to_state_start)

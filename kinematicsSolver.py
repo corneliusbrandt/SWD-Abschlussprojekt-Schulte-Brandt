@@ -4,17 +4,22 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 class EbeneKinematik:
-    def __init__(self, data_gelenke, data_glieder, step_size=10):	
+    def __init__(self, data_gelenke, data_glieder, step_size=5):	
         """
         Initialisiert das Kinematik-System.
         :param data: Dictionary mit den Schlüsseln 'Punkt', 'X-Koordinate', 'Y-Koordinate', 'Statisch', 'Kurbel' und 'Glieder'
         """
         self.data_gelenke = data_gelenke
+        data_glieder = {"Glieder": np.array(list(data_glieder.values()))}
         self.data_glieder = data_glieder
         self.gelenke = np.array([[data_gelenke['x-Koordinate'][i], data_gelenke['y-Koordinate'][i]] for i in range(len(data_gelenke['Punkt']))], dtype=float)
         print("Gelenk Vektor:\n", self.gelenke)
         self.rotations_Punkt = data_gelenke['Punkt'][[i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if k and s][0]]
         print("Rotation Point:", self.rotations_Punkt)
+        # Remove the rotation point from data_glieder
+        rotation_index = data_gelenke['Punkt'].index(self.rotations_Punkt)
+        self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=0)
+        self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=1)
         self.fester_punkt = data_gelenke['Punkt'][[i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if not k and s][0]]
         print("Fester Punkt:", self.fester_punkt)
         self.antrieb = data_gelenke['Punkt'][[i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if k and not s][0]]
@@ -172,32 +177,35 @@ class EbeneKinematik:
         ani = animation.FuncAnimation(fig, update, frames=len(range(0, 360, self.step_size)), init_func=init, blit=True)
         plt.show()
 
-# data_gelenke = {
-#     'Punkt': ['A', 'B', 'C', 'D',],
-#     'X-Koordinate': [0, 10, -25, -30],
-#     'Y-Koordinate': [0, 35, 10, 0],
-#     'Statisch': [True, False, False, True],
-#     'Kurbel': [False, False, True, True]
-# }
 
-# data_glieder ={
-#     'Glieder': [[False, True, False], [False, False, True], [False, False, False]]
-# }
 
-# # Initialize the kinematics system
-# kinematik = EbeneKinematik(data_gelenke, data_glieder)
+#if __name__ == "__main__":
+#    data_gelenke = {
+#        'Punkt': ['A', 'B', 'C', 'D',],
+#        'X-Koordinate': [0, 10, -25, -30],
+#        'Y-Koordinate': [0, 35, 10, 0],
+#        'Statisch': [True, False, False, True],
+#        'Kurbel': [False, False, True, True]
+#    }
 
-# # Check if the system is valid
-# if kinematik.check_system():
-#     print("System is valid.")
-# else:
-#     print("System is invalid.")
+#    data_glieder ={
+#        'Glieder': [[False, True, False], [False, False, True], [False, False, False]]
+#    }
 
-# # Calculate the lengths of the links
-# kinematik.cal_length()
+    # Initialize the kinematics system
+#    kinematik = EbeneKinematik(data_gelenke, data_glieder)
 
-# # Solve the kinematic system
-# kinematik.solve()
+    # Check if the system is valid
+#    if kinematik.check_system():
+#        print("System is valid.")
+#    else:
+#       print("System is invalid.")
 
-# # Visualize the kinematic system
-# kinematik.visualize()
+    # Calculate the lengths of the links
+#   kinematik.cal_length()
+
+    # Solve the kinematic system
+#    kinematik.solve()
+
+    # Visualize the kinematic system
+#    kinematik.visualize()

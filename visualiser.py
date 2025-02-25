@@ -4,6 +4,7 @@ import matplotlib.animation as animation
 import mechanism as mechanism
 import streamlit as st
 import io
+import os
 
 
 class Visualiser:
@@ -30,22 +31,38 @@ class Visualiser:
         nx.draw(G, pos, with_labels=True, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
         st.pyplot(fig)
 
-    def animate_mechanism(self):
+    def animate_mechanism(self, solved_points):
         fig, ax = plt.subplots()
+        ax.set_xlim(-50, 50)
+        ax.set_ylim(-50, 50)
+        ax.set_aspect('equal', adjustable='box')
         G = self.data_to_graph()
         pos = nx.get_node_attributes(G, 'pos')
+        nx.draw(G, pos, with_labels=True, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
         
 
         def update_animation(frame):
             # Here comes a function that updates the position of the nodes by getting them out of the database for each step
-            pass
+            ax.clear()
+            ax.set_xlim(-50, 50)
+            ax.set_ylim(-50, 50)
+            ax.set_aspect('equal', adjustable='box')
+            for n, p1 in enumerate(solved_points[frame]["Punkt"]):
+                (x , y) = (solved_points[frame]["x-Koordinate"][n], solved_points[frame]["y-Koordinate"][n])
+                pos[p1] = (x, y)
+            nx.draw(G, pos, with_labels=True, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
+            
+            
 
-        mechanism_animation = animation.FuncAnimation(fig, update_animation, frames=360, interval=20)
+        mechanism_animation = animation.FuncAnimation(fig, update_animation, frames=len(solved_points), interval=20)
 
-        buffer = io.BytesIO()
-        mechanism_animation.save(buffer, format='gif', writer=animation.PillowWriter(fps=10))
-        buffer.seek(0)
-        st.image(buffer, use_column_width=True)
+        #buffer = io.BytesIO()
+        #mechanism_animation.save(buffer, writer="pillow")
+        #buffer.seek(0)
+        downloads_path = os.path.join(os.path.expanduser("~"), "Downloads", "mechanism.gif")
+        mechanism_animation.save(downloads_path, writer=animation.PillowWriter(fps=10))
+        print(f"Animation gespeichert unter: {downloads_path}")
+        st.image(downloads_path, use_column_width=True)
         
 
 
