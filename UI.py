@@ -40,13 +40,14 @@ elif st.session_state["state"] == "state_create_mechanism":
         "y-Koordinate": [0 for i in range(number_of_points)],
         "Statisch": [False for i in range(number_of_points)],
         "Kurbel" : [False for i in range(number_of_points)],
+        "Bahnkurve": [False for i in range(number_of_points)]
     }
 
     st.write("Bitte hier Punkte eingetragen")
     table_points = st.data_editor(points) 
 
     st.write("Bitte hier Verbindungen zwischen den Punkten eingetragen")
-    links = {point: [False] * len(points["Punkt"]) for point in points["Punkt"]}
+    links = {f"{i}": [False] * number_of_points for i in range(number_of_points)}
     table_links = st.data_editor(links, hide_index=False)
 
 
@@ -63,7 +64,7 @@ elif st.session_state["state"] == "state_create_mechanism":
     st.button("Zurück", on_click=go_to_state_start)
 
 elif st.session_state["state"] == "state_load_mechanism":
-    st.header("Mechanismus simulieren oder bearbeiten")
+    st.header("Mechanismus bearbeiten")
     mechanism_list = mechanism.Mechanism.find_all()
     if len(mechanism_list) == 0:
         st.warning("Keine Mechanismen gefunden")
@@ -81,7 +82,6 @@ elif st.session_state["state"] == "state_load_mechanism":
         with col2:
             visualiser = visualiser.Visualiser(loaded_mechanism_name)
             visualiser.draw_mechanism()
-            st.button("Als GIF speichern")
 
         if st.button("Speichern"):
             loaded_mechanism_instance.store_data()
@@ -97,21 +97,26 @@ elif st.session_state["state"] == "state_solve_mechanism":
         if len(mechanism_list) == 0:
             st.warning("Keine Mechanismen gefunden")
         else:
-            selected_mechanism_name = st.selectbox("Mechanismus auswählen", [mech.name for mech in mechanism_list])
-            selected_mechanism_instance = mechanism.Mechanism.find_by_attribute("name", selected_mechanism_name)
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                selected_mechanism_name = st.selectbox("Mechanismus auswählen", [mech.name for mech in mechanism_list])
+                selected_mechanism_instance = mechanism.Mechanism.find_by_attribute("name", selected_mechanism_name)
 
-            st.write(f"Name: {selected_mechanism_instance.name}")
-            st.write("Punkte:")
-            st.dataframe(selected_mechanism_instance.table_points)
-            st.write("Verbindungen:")
-            st.dataframe(selected_mechanism_instance.table_links)
+                st.write(f"Name: {selected_mechanism_instance.name}")
+                st.write("Punkte:")
+                st.dataframe(selected_mechanism_instance.table_points)
+                st.write("Verbindungen:")
+                st.dataframe(selected_mechanism_instance.table_links)
 
-            if st.button("Mechanismus lösen"):
-                selected_mechanism_instance.solve_mechanism()
-                solution = selected_mechanism_instance.kinematics.solved_points
-                st.write("Lösung:")
-                st.write(solution)
-                visualiser = visualiser.Visualiser(selected_mechanism_instance)
-                visualiser.draw_solution(solution)
+                if st.button("Mechanismus lösen"):
+                    selected_mechanism_instance.solve_mechanism()
+                    solution = selected_mechanism_instance.kinematics.solved_points
+                    st.success("Der Mechanismus wird gelöst und automatisch in ihrem Download-Ordner gespeichert.")
+                    #st.write("Lösung:")
+                    #st.write(solution)
+                
+                    with col2:
+                        visualiser = visualiser.Visualiser(selected_mechanism_name)
+                        visualiser.animate_mechanism(solution)
 
         st.button("Zurück", on_click=go_to_state_start)
