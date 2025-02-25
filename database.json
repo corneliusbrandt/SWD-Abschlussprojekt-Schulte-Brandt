@@ -1,0 +1,148 @@
+{
+    "mechanisms": {
+        "2": {
+            "name": "5 Gelenk Test1",
+            "table_points": {
+                "Punkt": [
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4"
+                ],
+                "x-Koordinate": [
+                    0,
+                    10,
+                    -15,
+                    -25,
+                    -30
+                ],
+                "y-Koordinate": [
+                    0,
+                    35,
+                    10,
+                    10,
+                    0
+                ],
+                "Statisch": [
+                    true,
+                    false,
+                    false,
+                    false,
+                    true
+                ],
+                "Kurbel": [
+                    false,
+                    false,
+                    false,
+                    true,
+                    true
+                ]
+            },
+            "table_links": {
+                "0": [
+                    false,
+                    true,
+                    false,
+                    false,
+                    false
+                ],
+                "1": [
+                    false,
+                    false,
+                    true,
+                    false,
+                    false
+                ],
+                "2": [
+                    false,
+                    false,
+                    false,
+                    true,
+                    false
+                ],
+                "3": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    true
+                ],
+                "4": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    false
+                ]
+            }
+        },
+        "3": {
+            "name": "4 Punkt",
+            "table_points": {
+                "Punkt": [
+                    "0",
+                    "1",
+                    "2",
+                    "3"
+                ],
+                "x-Koordinate": [
+                    0,
+                    10,
+                    -25,
+                    -30
+                ],
+                "y-Koordinate": [
+                    0,
+                    35,
+                    10,
+                    0
+                ],
+                "Statisch": [
+                    true,
+                    false,
+                    false,
+                    true
+                ],
+                "Kurbel": [
+                    false,
+                    false,
+                    true,
+                    true
+                ],
+                "Bahnkurve": [
+                    false,
+                    true,
+                    false,
+                    false
+                ]
+            },
+            "table_links": {
+                "0": [
+                    false,
+                    true,
+                    false,
+                    false
+                ],
+                "1": [
+                    false,
+                    false,
+                    true,
+                    false
+                ],
+                "2": [
+                    false,
+                    false,
+                    false,
+                    true
+                ],
+                "3": [
+                    false,
+                    false,
+                    false,
+                    false
+                ]
+            }
+        }
+    }
+}
