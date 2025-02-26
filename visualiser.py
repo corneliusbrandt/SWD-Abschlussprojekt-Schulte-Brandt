@@ -4,6 +4,7 @@ import matplotlib.animation as animation
 import mechanism as mechanism
 import streamlit as st
 import numpy as np
+import pandas as pd
 import io
 import os
 
@@ -32,9 +33,10 @@ class Visualiser:
     def calc_trajectory(self, solved_points):
         # Calculates the trajectory of the point where the parameter "Bahnkurve" is set to True
         point_index = 0
-        for n, p1 in enumerate(self.mechanism_to_visualise.table_points["Kurbel"]):
+        for n, p1 in enumerate(self.mechanism_to_visualise.table_points["Bahnkurve"]):
             if p1:
-                point_index = n-1
+                point_index = n
+                print(f"Point {n} is a trajectory point.")
                 trajectory = []
                 for point in solved_points:
                     trajectory.append((point["x-Koordinate"][point_index], point["y-Koordinate"][point_index]))
@@ -44,12 +46,21 @@ class Visualiser:
 
     def save_trajectory_to_csv(self, solved_points):
         # Saves the trajectory of the point where the parameter "Bahnkurve" is set to True to a csv file
-        trajectory_array = self.calc_trajectory(solved_points)
-        if trajectory_array:
-            trajectory_array = np.array(trajectory_array)
-            np.savetxt("trajectory.csv", trajectory_array, delimiter=",")
-        else:
-            print("No trajectory to save.")
+        trajectory = self.calc_trajectory(solved_points)
+        if trajectory:
+            df = pd.DataFrame(trajectory, columns=["x-Koordinate", "y-Koordinate"])
+            buffer = io.BytesIO()
+            df.to_csv(buffer, index=False)  # Standard-Trennzeichen (Komma)
+            buffer.seek(0)  # Zurück zum Anfang der Datei
+
+            # Download-Button in Streamlit
+            st.download_button(
+                label="Bahnkurve als CSV-Datei herunterladen",
+                data=buffer,
+                file_name="daten.csv",
+                mime="text/csv")
+            
+        
         
     
     def draw_mechanism(self):
@@ -74,8 +85,11 @@ class Visualiser:
 
         fig, ax = plt.subplots()
         ax.set_xlim(-50, 50)
-        ax.set_ylim(-50, 50)
+        ax.set_ylim(-70, 50)
         ax.set_aspect('equal', adjustable='box')
+        ax.grid(True)  # Enable grid
+        ax.axhline(0, color='black',linewidth=0.5)  # X-axis
+        ax.axvline(0, color='black',linewidth=0.5)  # Y-axis
         G = self.data_to_graph()
         pos = nx.get_node_attributes(G, 'pos')
 
@@ -96,8 +110,11 @@ class Visualiser:
         def update_animation(frame):
             ax.clear()
             ax.set_xlim(-50, 50)
-            ax.set_ylim(-50, 50)
+            ax.set_ylim(-70, 50)
             ax.set_aspect('equal', adjustable='box')
+            ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)  # Enable grid
+            ax.axhline(0, color='black',linewidth=0.5)  # X-axis
+            ax.axvline(0, color='black',linewidth=0.5)  # Y-axis
             ax.add_artist(circle)
             if trajectory_array:
                 ax.add_artist(trajectory)

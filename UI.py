@@ -142,6 +142,7 @@ elif st.session_state["state"] == "state_solve_mechanism":
                     with col2:
                         visualiser = visualiser.Visualiser(selected_mechanism_name)
                         visualiser.animate_mechanism(solution)
+                        visualiser.save_trajectory_to_csv(solution)
 
         st.button("Zurück", on_click=go_to_state_start)
         
