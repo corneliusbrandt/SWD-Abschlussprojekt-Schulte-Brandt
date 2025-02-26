@@ -81,8 +81,9 @@ class EbeneKinematik:
             raise ValueError("Der feste Punkt und der Antrieb dürfen nicht identisch sein.")
         if not self.rotations_Punkt:
             raise ValueError("Es muss mindestens einen Rotationspunkt geben.")
-        if 2*(len(self.data_gelenke['Punkt']) - 1) - self.calc_constraints != 0:
+        if np.sum(self.data_glieder['Glieder']) != len(self.gelenke) - 2:
             raise ValueError("Das System ist nicht vollständig.")
+        
         
         return True
     
