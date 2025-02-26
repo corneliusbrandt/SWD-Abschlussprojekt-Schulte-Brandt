@@ -23,8 +23,8 @@ Hier können SVG Dateien importiert werden um einen neuen Mechanismus zu erstell
 Im Zuge dieses Projekts wurden alle in der Aufgabenstellung gefordertern Grundfunktionen sowie einige Erweiterungen, welche hier kurz erläutert werden, umgesetzt. Die erste Erweiterung ist das Speichern der Animation als GIF Datei. Dies geschieht automatisch nach Berechnung der Kinametik. Des weiteren wurde das Importieren von SVG Dateien als alternativer Ansatz zur Erstellung von Mechanismen implementiert. Die Koordinaten der Punkte für das Strandbeest Bein wurden aus [1] entnommen.
 
 ### Softwarestruktur
-In Folgender Abbildung ist die Grundlegende Softwarestruktur dargestellt. Die Klasse Mechanism enthält hierbei, in leicht abgewandelter Form, einige Funktionen der User Klasse[2] aus der Case Study dieses Semesters.
+In Folgender Abbildung ist die Grundlegende Softwarestruktur dargestellt. Die Klasse Mechanism enthält hierbei, in leicht abgewandelter Form, einige Funktionen der User Klasse [2] aus der Case Study dieses Semesters.
 
 ### Quellen
-[1] Smuda, Kevin: [Strandbeest-Bein](https://www.geogebra.org/m/kzg4km9q), aufgerufen am 26.02.25.
-[2] Huber, Julian; Panny, Matthias: [users.py](https://mrp123.github.io/MCI-MECH-B-3-SWD-SWD-ILV/04_Case_Study_I/Examples/src/), aufgerufen am 26.02.25
+[1] Smuda, Kevin: [Strandbeest-Bein](https://www.geogebra.org/m/kzg4km9q), aufgerufen am 26.02.25.  
+[2] Huber, Julian; Panny, Matthias: [users.py](https://mrp123.github.io/MCI-MECH-B-3-SWD-SWD-ILV/04_Case_Study_I/Examples/src/), aufgerufen am 26.02.25.

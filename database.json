@@ -1,1 +1,65 @@
-{"mechanisms": {"1": {"name": "Imported Mechanism", "table_points": {"Punkt": ["0", "1", "2", "3"], "x-Koordinate": [15.0, 10.0, 7.0, 6.0], "y-Koordinate": [15.0, 20.0, 15.0, 10.0], "Statisch": [true, false, false, true], "Kurbel": [false, false, true, true]}, "table_links": {"0": [false, true, false, false], "1": [false, false, true, false], "2": [false, false, false, false], "3": [false, false, false, false]}}}}
+{
+    "mechanisms": {
+        "1": {
+            "name": "Imported Mechanism",
+            "table_points": {
+                "Punkt": [
+                    "0",
+                    "1",
+                    "2",
+                    "3"
+                ],
+                "x-Koordinate": [
+                    15.0,
+                    10.0,
+                    7.0,
+                    6.0
+                ],
+                "y-Koordinate": [
+                    15.0,
+                    20.0,
+                    15.0,
+                    10.0
+                ],
+                "Statisch": [
+                    true,
+                    false,
+                    false,
+                    true
+                ],
+                "Kurbel": [
+                    false,
+                    false,
+                    true,
+                    true
+                ]
+            },
+            "table_links": {
+                "0": [
+                    false,
+                    true,
+                    false,
+                    false
+                ],
+                "1": [
+                    false,
+                    false,
+                    true,
+                    false
+                ],
+                "2": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "3": [
+                    false,
+                    false,
+                    false,
+                    false
+                ]
+            }
+        }
+    }
+}
