@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import mechanism as mechanism
 import visualiser as visualiser
+import SVGImporter
 
 
 st.set_page_config(layout="wide")
@@ -21,6 +22,9 @@ def go_to_state_load_mechanism():
 def go_to_solve_mechanism():
     st.session_state["state"] = "state_solve_mechanism"
 
+def go_to_state_import_svg():
+    st.session_state["state"] = "state_import_svg"
+
 
 
 if st.session_state["state"] == "state_start":
@@ -28,6 +32,7 @@ if st.session_state["state"] == "state_start":
     st.button("Neuen Mechanismus erstellen", on_click=go_to_state_create_mechanism)
     st.button("Mechanismus laden", on_click=go_to_state_load_mechanism)
     st.button("Mechanismus lösen", on_click=go_to_solve_mechanism)
+    st.button("SVG importieren", on_click=go_to_state_import_svg)
 
 elif st.session_state["state"] == "state_create_mechanism":
     st.header("Neuen Mechanismus erstellen")
@@ -126,3 +131,51 @@ elif st.session_state["state"] == "state_solve_mechanism":
                         visualiser.animate_mechanism(solution)
 
         st.button("Zurück", on_click=go_to_state_start)
+        
+
+            
+
+elif st.session_state["state"] == "state_import_svg":
+    st.header("SVG Datei importieren")
+    uploaded_file = st.file_uploader("SVG Datei hochladen", type="svg")
+
+    if uploaded_file is not None:
+        svg_content = uploaded_file.read().decode("utf-8")
+        parsed_data = SVGImporter.parse_svg(svg_content)
+
+        st.success("SVG Datei erfolgreich importiert")
+        
+        mechanism_name = st.text_input("Name des Mechanismus", value="Imported Mechanism")
+        if "points" in parsed_data and "links" in parsed_data:
+            points = parsed_data["Punkte"]
+            links = parsed_data["Glieder"]
+        else:
+            st.error("Fehler: Die SVG-Datei enthält keine gültigen Punkte und Verbindungen.")
+            st.stop()
+
+        st.write("Punkte:")
+        points = st.data_editor(points)
+
+        st.write("Verbindungen:")
+        links = st.data_editor(links, hide_index=False)
+
+        st.write("Punkte:")
+        table_points = st.data_editor(points)
+
+        st.write("Verbindungen:")
+        table_links = st.data_editor(links, hide_index=False)
+
+        col1, col2 = st.columns([2, 1])
+        with col2:
+            visualiser = visualiser.Visualiser(mechanism_name)
+            visualiser.draw_mechanism()
+
+        if st.button("Speichern"):
+            try:
+                mechanism.Mechanism(mechanism_name, table_points, table_links).store_data()
+                st.success("Mechanismus gespeichert")
+            except Exception as e:
+                st.error(f"Fehler beim Speichern des Mechanismus: {e}")
+            st.button("Mechanismus laden", on_click=go_to_state_load_mechanism)
+
+    st.button("Zurück", on_click=go_to_state_start)
