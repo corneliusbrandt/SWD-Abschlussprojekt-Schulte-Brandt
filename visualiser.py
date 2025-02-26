@@ -37,6 +37,15 @@ class Visualiser:
                 return trajectory
             else:
                 print(f"Point {n} is not a trajectory point.")
+
+    def save_trajectory_to_csv(self, solved_points):
+        # Saves the trajectory of the point where the parameter "Bahnkurve" is set to True to a csv file
+        trajectory_array = self.calc_trajectory(solved_points)
+        if trajectory_array:
+            trajectory_array = np.array(trajectory_array)
+            np.savetxt("trajectory.csv", trajectory_array, delimiter=",")
+        else:
+            print("No trajectory to save.")
         
     
     def draw_mechanism(self):
