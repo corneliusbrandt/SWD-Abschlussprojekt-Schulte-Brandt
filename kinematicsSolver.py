@@ -15,7 +15,7 @@ class EbeneKinematik:
         
 
         self.gelenke = np.array([[data_gelenke['x-Koordinate'][i], data_gelenke['y-Koordinate'][i]] for i in range(len(data_gelenke['Punkt']))], dtype=float)
-        print("Gelenk Vektor:\n", self.gelenke)
+        # print("Gelenk Vektor:\n", self.gelenke)
 
         rotation_point = [i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if k and s]
         # print("Rotation Point Index:", rotation_point)
@@ -29,7 +29,7 @@ class EbeneKinematik:
         # print("Data Type Fester Punkt:", type(self.fester_punkt))
 
         self.antrieb = data_gelenke['Punkt'][[i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if k and not s][0]]
-        print("Antrieb:", self.antrieb)
+        # print("Antrieb:", self.antrieb)
 
         self.step_size = step_size
 
@@ -40,7 +40,7 @@ class EbeneKinematik:
         self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=0)
         self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=1)
         self.glieder = np.array(data_glieder['Glieder'])
-        print("Glieder Matrix:\n", self.glieder)
+        # print("Glieder Matrix:\n", self.glieder)
         self.create_glieder()
 
         self.check_system()
@@ -81,8 +81,8 @@ class EbeneKinematik:
             raise ValueError("Der feste Punkt und der Antrieb dürfen nicht identisch sein.")
         if not self.rotations_Punkt:
             raise ValueError("Es muss mindestens einen Rotationspunkt geben.")
-        if np.sum(self.data_glieder['Glieder']) != len(self.gelenke) - 2:
-            raise ValueError("Das System ist nicht vollständig.")
+        #if np.sum(self.data_glieder['Glieder']) != len(self.gelenke) - 2:
+            #raise ValueError("Das System ist nicht vollständig.")
         
         
         return True
@@ -100,9 +100,9 @@ class EbeneKinematik:
         Erstellt die Glieder-Matrix basierend auf den Verbindungen zwischen den Punkten.
         :return: None
         """
-        print("Data Glieder:\n", self.data_glieder)
+        # print("Data Glieder:\n", self.data_glieder)
         data = np.array(self.data_glieder['Glieder'], dtype=int)
-        print("Data:\n", data)
+        # print("Data:\n", data)
         num_points = len(data)
         connections = []
         
@@ -132,14 +132,14 @@ class EbeneKinematik:
         :return: Array mit den Längen der Glieder
         """
         gelenke = self.gelenke[~(np.array(self.data_gelenke['Statisch']) & np.array(self.data_gelenke['Kurbel']))].reshape(-1, 1)
-        print("Gelenke (cal_length):\n", gelenke)
+        # print("Gelenke (cal_length):\n", gelenke)
         L = np.dot(self.glieder, gelenke)
-        print("L",L)
+        # print("L",L)
         # print("len",len(self.glieder))
         L.reshape(len(self.glieder) // 2, 2)
-        print("L Reshape",L)
+        # print("L Reshape",L)
         l = np.linalg.norm(L, axis=1)
-        print("l",l)
+        # print("l",l)
 
         return l
 
