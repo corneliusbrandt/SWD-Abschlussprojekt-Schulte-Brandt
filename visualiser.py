@@ -9,8 +9,11 @@ import os
 
 
 class Visualiser:
-    def __init__(self, mechanism_to_visualise):
-        self.mechanism_to_visualise = mechanism.Mechanism.find_by_attribute("name", mechanism_to_visualise)
+    def __init__(self, mechanism_to_visualise_name, mechanism_to_visualise=None):
+        if mechanism_to_visualise:
+            self.mechanism_to_visualise = mechanism_to_visualise
+        else:
+            self.mechanism_to_visualise = mechanism.Mechanism.find_by_attribute("name", mechanism_to_visualise_name)
 
     def data_to_graph(self):
         G = nx.Graph()

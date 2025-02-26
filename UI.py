@@ -84,20 +84,33 @@ elif st.session_state["state"] == "state_load_mechanism":
         loaded_mechanism_name = col1.selectbox("Mechanismus auswählen",
                                         [mechanism.name for mechanism in mechanism_list])
         loaded_mechanism_instance = mechanism.Mechanism.find_by_attribute("name", loaded_mechanism_name)
+        temp_table_points = loaded_mechanism_instance.table_points.copy()
+        temp_table_links = loaded_mechanism_instance.table_links.copy()
 
         col1.write(f"Name: {loaded_mechanism_instance.name}")
-        loaded_mechanism_instance.table_points = col1.data_editor(loaded_mechanism_instance.table_points)
-        loaded_mechanism_instance.table_links = col1.data_editor(loaded_mechanism_instance.table_links, hide_index=False)
+        temp_table_points = col1.data_editor(temp_table_points)
+        temp_table_links = col1.data_editor(temp_table_links, hide_index=False)
 
         col2.write("Visualisierung des Mechanismus")
         with col2:
-            visualiser = visualiser.Visualiser(loaded_mechanism_name)
-            visualiser.draw_mechanism()
+            try:
+                temp_mechanism_instance = mechanism.Mechanism("Preview", temp_table_points, temp_table_links)
+                visualiser = visualiser.Visualiser("Preview", temp_mechanism_instance)
+                visualiser.draw_mechanism()
+            except Exception as e:
+                st.warning(f"Warnung: {e}")
 
         if st.button("Speichern"):
-            loaded_mechanism_instance.store_data()
-            st.success("Mechanismus gespeichert")
-            st.rerun()
+            try:
+                temp_mechanism_instance = mechanism.Mechanism("Preview", temp_table_points, temp_table_links)
+                loaded_mechanism_instance.table_points = temp_table_points
+                loaded_mechanism_instance.table_links = temp_table_links
+                loaded_mechanism_instance.store_data()
+                st.success("Mechanismus gespeichert")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Fehler beim Speichern des Mechanismus: {e}")
+
         st.button("Löschen", on_click=loaded_mechanism_instance.delete_data)
 
     st.button("Zurück", on_click=go_to_state_start)
