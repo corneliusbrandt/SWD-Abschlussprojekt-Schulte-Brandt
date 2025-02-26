@@ -12,7 +12,6 @@ class EbeneKinematik:
         self.check_input(data_gelenke, data_glieder)
         
         self.data_gelenke = data_gelenke
-        data_glieder = {"Glieder": np.array(list(data_glieder.values()))}
         
 
         self.gelenke = np.array([[data_gelenke['x-Koordinate'][i], data_gelenke['y-Koordinate'][i]] for i in range(len(data_gelenke['Punkt']))], dtype=float)
@@ -23,23 +22,23 @@ class EbeneKinematik:
         self.rotations_Punkt = data_gelenke['Punkt'][rotation_point[0]]
         # print("Rotation Point:", self.rotations_Punkt)
 
-        # Remove the rotation point from data_glieder
-        # rotation_index = data_gelenke['Punkt'].index(self.rotations_Punkt)
-        # self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=0)
-        # self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=1)
         
-        self.fester_punkt = [data_gelenke['Punkt'][i] for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if not k and s]
+        
+        self.fester_punkt = data_gelenke['Punkt'][[i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if not k and s][0]]
         # print("Fester Punkt:", self.fester_punkt)
         # print("Data Type Fester Punkt:", type(self.fester_punkt))
 
-        self.antrieb = [data_gelenke['Punkt'][i] for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if k and not s]
-        # print("Antrieb:", self.antrieb)
+        self.antrieb = data_gelenke['Punkt'][[i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if k and not s][0]]
+        print("Antrieb:", self.antrieb)
 
         self.step_size = step_size
 
         self.solved_points = None
-
+        data_glieder = {"Glieder": np.array(list(data_glieder.values()))}
         self.data_glieder = data_glieder
+        rotation_index = data_gelenke['Punkt'].index(self.rotations_Punkt)
+        self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=0)
+        self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=1)
         self.glieder = np.array(data_glieder['Glieder'])
         print("Glieder Matrix:\n", self.glieder)
         self.create_glieder()
@@ -239,32 +238,32 @@ class EbeneKinematik:
     # data_glieder = {
     #     'Glieder': [[False, True, False, False], [False, False, True, True], [False, False, False, False],[False, False, False, False]]
     # }
-data_gelenke = {
-    'Punkt': ['A', 'B', 'C', 'D'],
-    'x-Koordinate': [0, 10, -25, -30],
-    'y-Koordinate': [0, 35, 10, 0],
-    'Statisch': [True, False, False, True],
-    'Kurbel': [False, False, True, True]
-}
+# data_gelenke = {
+#     'Punkt': ['1', '2', '3', '4'],
+#     'x-Koordinate': [0, 10, -25, -30],
+#     'y-Koordinate': [0, 35, 10, 0],
+#     'Statisch': [True, False, False, True],
+#     'Kurbel': [False, False, True, True]
+# }
 
-data_glieder = {
-    'Glieder': [[False, True, False], [False, False, True], [False, False, False]]
-}
+# data_glieder = {
+#     'Glieder': [[False, True, False], [False, False, True], [False, False, False]]
+# }
 
-# Initialize the kinematics system
-kinematik = EbeneKinematik(data_gelenke, data_glieder)
+# # Initialize the kinematics system
+# kinematik = EbeneKinematik(data_gelenke, data_glieder)
 
-# Check if the system is valid
-if kinematik.check_system():
-    print("System is valid.")
-else:
-    print("System is invalid.")
+# # Check if the system is valid
+# if kinematik.check_system():
+#     print("System is valid.")
+# else:
+#     print("System is invalid.")
 
-# Calculate the lengths of the links
-kinematik.cal_length()
+# # Calculate the lengths of the links
+# kinematik.cal_length()
 
-# Solve the kinematic system
-kinematik.solve()
+# # Solve the kinematic system
+# kinematik.solve()
 
-# Visualize the kinematic system
-kinematik.visualize()
+# # Visualize the kinematic system
+# kinematik.visualize()
