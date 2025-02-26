@@ -23,8 +23,9 @@ class Visualiser:
 
         links = self.mechanism_to_visualise.table_links
         for i, p1 in enumerate(self.mechanism_to_visualise.table_points["Punkt"]):
+            print("Data Type p1:", type(p1))
             for j, p2 in enumerate(self.mechanism_to_visualise.table_points["Punkt"]):
-                if links[p1][j]:
+                if p1 in links and links[p1][j]:
                     G.add_edge(p1, p2)
         return G
     
@@ -90,8 +91,7 @@ class Visualiser:
 
 
         #Draw the mechanism
-        nx.draw(G, pos, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
-        
+        nx.draw(G, pos, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)        
 
         def update_animation(frame):
             ax.clear()

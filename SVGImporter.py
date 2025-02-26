@@ -18,7 +18,7 @@ def parse_svg(svg_content):
 
     # Extract all line elements
     lines = root.findall('.//svg:path', namespace)
-    print(f"Found {len(lines)} path elements")
+    # print(f"Found {len(lines)} path elements")
     for line in lines:
         d = line.get('d')
         if d:
@@ -32,7 +32,7 @@ def parse_svg(svg_content):
 
     # Extract all circle elements
     circles_elements = root.findall('.//svg:circle', namespace)
-    print(f"Found {len(circles_elements)} circle elements")
+    # print(f"Found {len(circles_elements)} circle elements")
     for circle in circles_elements:
         cx, cy = float(circle.get('cx')), float(circle.get('cy'))
         circles.append((cx, -cy))  # Flip y-coordinate
@@ -49,7 +49,7 @@ def parse_svg(svg_content):
     # Add nodes to the data dictionary
     node_list = list(nodes)
     for i, (x, y) in enumerate(node_list):
-        data_gelenke['Punkt'].append(chr(65 + i))  # Convert index to letter
+        data_gelenke['Punkt'].append(f"{i}")
         data_gelenke['x-Koordinate'].append(x)
         data_gelenke['y-Koordinate'].append(y)
         data_gelenke['Statisch'].append(False)
@@ -57,29 +57,34 @@ def parse_svg(svg_content):
 
     # Add circle center points to the data dictionary
     for cx, cy in circles:
-        data_gelenke['Punkt'].append(chr(65 + len(node_list)))  # Next letter after nodes
+        data_gelenke['Punkt'].append(f"{len(node_list)}")
         data_gelenke['x-Koordinate'].append(cx)
         data_gelenke['y-Koordinate'].append(cy)
         data_gelenke['Statisch'].append(True)
         data_gelenke['Kurbel'].append(True)
 
     # Create connection matrix
-    connection_matrix = [[0] * len(node_list) for _ in range(len(node_list))]
+    connection_matrix = [[0] * (len(node_list) + 1) for _ in range(len(node_list))]
     for (x1, y1), (x2, y2) in edges:
         i = node_list.index((x1, y1))
         j = node_list.index((x2, y2))
         connection_matrix[i][j] = 1
         connection_matrix[j][i] = 1  # Assuming undirected graph
     connection_matrix = np.triu(connection_matrix, k=1).astype(bool)  # Convert 1 and 0 to True and False
-    print("Data Gelenke:")
-    for key, value in data_gelenke.items():
-        print(f"{key}: {value}")
 
-    # Print the connection matrix
-    print("Connection Matrix:")
-    for row in connection_matrix:
-        print(row)
+    # Convert connection matrix to dict
+    number_of_points = len(node_list)+1
+    links = {f"{i}": [False] * number_of_points for i in range(number_of_points)}
+    for i, row in enumerate(connection_matrix):
+        for j, val in enumerate(row):
+            links[f"{i}"][j] = bool(val)
 
+    connection_matrix = links
+    
+    # print("data_gelenke:\n", data_gelenke)
+    # print("data_gelenke Tyoe:", type(data_gelenke))
+    # print("connection_matrix:\n", connection_matrix)
+    # print("connection_matrix Type:", type(connection_matrix))
     return data_gelenke, connection_matrix
 
 
