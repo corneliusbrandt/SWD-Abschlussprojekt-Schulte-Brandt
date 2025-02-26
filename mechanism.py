@@ -12,15 +12,17 @@ class Mechanism:
         self.table_links = table_links
         self.kinematics = EbeneKinematik(table_points, table_links)
 
-    def store_data(self)-> None:
+    def store_data(self) -> None:
         """Save the mechanism to the database"""
         print("Storing data...")
+
         MechanismQuery = Query()
         result = self.db_connector.search(MechanismQuery.name == self.name)
         data_to_save = {key: value for key, value in self.__dict__.items() if key != "kinematics"}
-
+     
+        
         if result:
-            result = self.db_connector.update(data_to_save, doc_ids=[result[0].doc_id])
+            self.db_connector.update(data_to_save, doc_ids=[result[0].doc_id])
             print("Data updated.")
         else:
             self.db_connector.insert(data_to_save)
@@ -67,6 +69,6 @@ class Mechanism:
 
 
 
-    
+
 
 
