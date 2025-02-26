@@ -57,8 +57,14 @@ elif st.session_state["state"] == "state_create_mechanism":
         #visualiser.draw_mechanism()
 
     if st.button("Speichern"):
-        mechanism.Mechanism(mechanism_name, table_points, table_links).store_data()
-        st.success("Mechanismus gespeichert")
+        print("Points:", table_points)
+        print("Links:", table_links)
+        # mechanism.Mechanism(mechanism_name, table_points, table_links).store_data()
+        try:
+            mechanism.Mechanism(mechanism_name, table_points, table_links).store_data()
+            st.success("Mechanismus gespeichert")
+        except Exception as e:
+            st.error(f"Fehler beim Speichern des Mechanismus: {e}")
         st.button("Mechanismus laden", on_click=go_to_state_load_mechanism)
 
     st.button("Zurück", on_click=go_to_state_start)

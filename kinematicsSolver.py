@@ -9,28 +9,63 @@ class EbeneKinematik:
         Initialisiert das Kinematik-System.
         :param data: Dictionary mit den Schlüsseln 'Punkt', 'X-Koordinate', 'Y-Koordinate', 'Statisch', 'Kurbel' und 'Glieder'
         """
+        self.check_input(data_gelenke, data_glieder)
+        
         self.data_gelenke = data_gelenke
         data_glieder = {"Glieder": np.array(list(data_glieder.values()))}
         self.data_glieder = data_glieder
+        self.glieder = np.array(data_glieder['Glieder'])
+        self.create_glieder()
+        print("Glieder Matrix:\n", self.glieder)
+
         self.gelenke = np.array([[data_gelenke['x-Koordinate'][i], data_gelenke['y-Koordinate'][i]] for i in range(len(data_gelenke['Punkt']))], dtype=float)
         print("Gelenk Vektor:\n", self.gelenke)
-        self.rotations_Punkt = data_gelenke['Punkt'][[i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if k and s][0]]
+
+        rotation_point = [i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if k and s]
+        print("Rotation Point Index:", rotation_point)
+        self.rotations_Punkt = data_gelenke['Punkt'][rotation_point[0]]
         print("Rotation Point:", self.rotations_Punkt)
+
         # Remove the rotation point from data_glieder
         rotation_index = data_gelenke['Punkt'].index(self.rotations_Punkt)
         self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=0)
         self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=1)
+        
         self.fester_punkt = data_gelenke['Punkt'][[i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if not k and s][0]]
         print("Fester Punkt:", self.fester_punkt)
+
         self.antrieb = data_gelenke['Punkt'][[i for i, (k, s) in enumerate(zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])) if k and not s][0]]
         print("Antrieb:", self.antrieb)
-        self.glieder = np.array(data_glieder['Glieder'])
-        self.create_glieder()
-        print("Glieder Matrix:\n", self.glieder)
+
         self.step_size = step_size
+
         self.solved_points = None
+
         self.check_system()
 
+    def check_input(self, data_gelenke, data_glieder):
+        """
+        Überprüft, ob die Eingabedaten gültig sind.
+        :param data_gelenke: Dictionary mit den Schlüsseln 'Punkt', 'X-Koordinate', 'Y-Koordinate', 'Statisch', 'Kurbel'
+        :param data_glieder: Dictionary mit dem Schlüssel 'Glieder'
+        :return: True, wenn die Eingabedaten gültig sind, sonst False
+        """
+        if not isinstance(data_gelenke, dict):
+            raise TypeError("data_gelenke must be a dictionary.")
+        if not isinstance(data_glieder, dict):
+            raise TypeError("data_glieder must be a dictionary.")
+        if 'Punkt' not in data_gelenke or 'x-Koordinate' not in data_gelenke or 'y-Koordinate' not in data_gelenke or 'Statisch' not in data_gelenke or 'Kurbel' not in data_gelenke:
+            raise ValueError("data_gelenke must contain the keys 'Punkt', 'x-Koordinate', 'y-Koordinate', 'Statisch', and 'Kurbel'.")
+        if not data_glieder:
+            raise ValueError("data_glieder must not be empty.")
+        if len(data_gelenke['Punkt']) != len(data_gelenke['x-Koordinate']) or len(data_gelenke['Punkt']) != len(data_gelenke['y-Koordinate']) or len(data_gelenke['Punkt']) != len(data_gelenke['Statisch']) or len(data_gelenke['Punkt']) != len(data_gelenke['Kurbel']):
+            raise ValueError("The lengths of the lists in data_gelenke must be equal.")
+        if not any(k and s for k, s in zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])):
+            raise ValueError("Es muss mindestens einen Punkt geben, der sowohl 'Kurbel' als auch 'Statisch' ist.")
+        
+        return True
+
+    
     def check_system(self):
         """
         Überprüft, ob das System gültig ist.
@@ -42,6 +77,11 @@ class EbeneKinematik:
             raise ValueError("Es darf nur ein Antrieb existieren.") 
         if self.antrieb == self.fester_punkt:
             raise ValueError("Der feste Punkt und der Antrieb dürfen nicht identisch sein.")
+        if not self.rotations_Punkt:
+            raise ValueError("Es muss mindestens einen Rotationspunkt geben.")
+        if np.sum(self.data_glieder['Glieder']) != len(self.gelenke) - 2:
+            raise ValueError("Das System ist nicht vollständig.")
+        
         return True
     
     def create_glieder(self):
