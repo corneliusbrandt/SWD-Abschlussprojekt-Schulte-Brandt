@@ -149,7 +149,7 @@ elif st.session_state["state"] == "state_solve_mechanism":
                     selected_mechanism_instance.solve_mechanism()
                     solution = selected_mechanism_instance.kinematics.solved_points
                     solution_errors = selected_mechanism_instance.kinematics.errors
-                    st.success("Der Mechanismus wird gelöst und automatisch in ihrem Download-Ordner gespeichert.")
+                    st.success("Der Mechanismus wird gelöst.")
                     #st.write("Lösung:")
                     #st.write(solution)
                 

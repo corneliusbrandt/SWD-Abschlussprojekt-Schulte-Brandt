@@ -5,6 +5,7 @@ import mechanism as mechanism
 import streamlit as st
 import numpy as np
 import pandas as pd
+import tempfile
 import io
 import os
 
@@ -116,9 +117,17 @@ class Visualiser:
 
         mechanism_animation = animation.FuncAnimation(fig, update_animation, frames=len(solved_points), interval=20)
 
-        downloads_path = os.path.join(os.path.expanduser("~"), "Downloads", "mechanism.gif")
-        mechanism_animation.save(downloads_path, writer=animation.PillowWriter(fps=10))
-        st.image(downloads_path, use_container_width=True)
+        #downloads_path = os.path.join(os.path.expanduser("~"), "Downloads", "mechanism.gif")
+        #mechanism_animation.save(downloads_path, writer=animation.PillowWriter(fps=10))
+        #st.image(downloads_path, use_container_width=True)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".gif") as tmpfile:
+            mechanism_animation.save(tmpfile.name, writer=animation.PillowWriter(fps=10))
+            tmp_path = tmpfile.name
+
+        st.image(tmp_path, use_container_width=True)
+
+        with open(tmp_path, "rb") as f:
+            st.download_button("Download Animation als GIF", f, "mechanism.gif", "image/gif")
         
 
 
