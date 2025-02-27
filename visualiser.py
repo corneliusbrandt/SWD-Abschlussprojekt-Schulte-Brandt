@@ -31,7 +31,6 @@ class Visualiser:
         return G
     
     def calc_trajectory(self, solved_points):
-        # Calculates the trajectory of the point where the parameter "Bahnkurve" is set to True
         point_index = 0
         for n, p1 in enumerate(self.mechanism_to_visualise.table_points["Bahnkurve"]):
             if p1:
@@ -45,7 +44,6 @@ class Visualiser:
                 print(f"Point {n} is not a trajectory point.")
 
     def save_trajectory_to_csv(self, solved_points):
-        # Saves the trajectory of the point where the parameter "Bahnkurve" is set to True to a csv file
         trajectory = self.calc_trajectory(solved_points)
         if trajectory:
             df = pd.DataFrame(trajectory, columns=["x-Koordinate", "y-Koordinate"])
@@ -58,7 +56,6 @@ class Visualiser:
         
     
     def draw_mechanism(self):
-        #Function for drawing a static picture of the mechanism
         G = self.data_to_graph()
         pos = nx.get_node_attributes(G, 'pos')
 
@@ -68,14 +65,10 @@ class Visualiser:
         st.pyplot(fig)
 
     def animate_mechanism(self, solved_points, errors):
-        # Function for animating the mechanism and plotting the error
-
-        # Calculate the radius for the circle around the rotation point
         rotation_index = self.mechanism_to_visualise.kinematics.data_gelenke['Punkt'].index(self.mechanism_to_visualise.kinematics.rotations_Punkt)
         antrieb_index = self.mechanism_to_visualise.kinematics.data_gelenke['Punkt'].index(self.mechanism_to_visualise.kinematics.antrieb)
         radius = np.linalg.norm(self.mechanism_to_visualise.kinematics.gelenke[rotation_index] - self.mechanism_to_visualise.kinematics.gelenke[antrieb_index])
 
-        # Calculate the trajectory of the point where the parameter "Bahnkurve" is set to True
         trajectory_array = self.calc_trajectory(solved_points)
 
         fig, (ax1, ax2) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
@@ -83,31 +76,23 @@ class Visualiser:
         max_x = max(point["x-Koordinate"][n] for point in solved_points for n in range(len(point["x-Koordinate"])))
         min_y = min(point["y-Koordinate"][n] for point in solved_points for n in range(len(point["y-Koordinate"])))
         max_y = max(point["y-Koordinate"][n] for point in solved_points for n in range(len(point["y-Koordinate"])))
-
-        # Calculate the center and range
         center_x = (min_x + max_x) / 2
         center_y = (min_y + max_y) / 2
         range_x = (max_x - min_x) * 1.5
         range_y = (max_y - min_y) * 1.5
-
-        # Set the new limits
         ax1.set_xlim(center_x - range_x / 2, center_x + range_x / 2)
         ax1.set_ylim(center_y - range_y / 2, center_y + range_y / 2)
         ax1.set_aspect('equal', adjustable='box')
         G = self.data_to_graph()
         pos = nx.get_node_attributes(G, 'pos')
-
-        # Add a circle around the rotation point
         circle = plt.Circle(self.mechanism_to_visualise.kinematics.gelenke[rotation_index], radius, color='r', fill=False)
         ax1.add_artist(circle)
 
-        # Add the trajectory
         if trajectory_array:
             x, y = zip(*trajectory_array)
             trajectory, = ax1.plot(x, y, '-', lw=1, color='red')
             ax1.add_artist(trajectory)
 
-        # Draw the mechanism
         nx.draw(G, pos, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax1)
 
         def update_animation(frame):
@@ -122,7 +107,6 @@ class Visualiser:
                 pos[p1] = (x, y)
             nx.draw(G, pos, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax1)
 
-            # Update error plot
             ax2.clear()
             ax2.plot(errors[:frame+1], color='blue')
             ax2.set_xlim(0, len(solved_points))

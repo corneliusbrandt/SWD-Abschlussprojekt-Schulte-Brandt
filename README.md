@@ -16,11 +16,29 @@ Hier können bereits erstellte Mechanismen geladen und bearbeitet werden. Das Be
 In diesem Menü kann der ausgewählte Mechanismus durch drücken von "Mechanismus lösen" gelöst und die Bewegung animiert werden. Nach der Berechnung, welche einige Zeit in Anspruch nehmen kann, wird die Animation angezeigt und auch automatisch als GIF Datei in Ihrem Downloads Ordner gespeichert. Durch drücken von "Bahnkurve als CSV-Datei herunterladen" kann die angezeigte Bahnkurve in eine .csv Datei gespeichert werden. Wichtig ist, dass in diesem Menü der Mechanismus nicht verändert werden kann.
 
 ### SVG importieren
-Hier können SVG Dateien importiert werden um einen neuen Mechanismus zu erstellen. Nachdem die Datei importiert wurde können Punkte und Verbindungen noch manuell bearbeitet werden. Der Kreismittelpunkt wird hierbei durch ein Kreisobjekt definiert und die Verbindungen durch Linienobjekte. Statische und der Kurbel zugehörige Punkte müssen manuell eingestellt werden. Daraufhin kann man den Mechanismus speichern.
+Hier können SVG-Dateien importiert werden, um einen neuen Mechanismus zu erstellen. Nachdem die Datei importiert wurde, können Punkte und Verbindungen noch manuell bearbeitet werden. Der Kreismittelpunkt wird durch ein Kreisobjekt definiert, und die Verbindungen durch Linienobjekte. Jeder Punkt darf im SVG maximal zwei Verbindungen besitzen, sodass eine Kette entsteht. Manuell können anschließend zusätzliche Verbindungen hinzugefügt werden. Statische und der Kurbel zugehörige Punkte müssen ebenfalls manuell eingestellt werden. Danach kann der Mechanismus gespeichert werden.
 
 ## Projekt-Dokumentation
 ### Umgesetzte Erweiterungen
-Im Zuge dieses Projekts wurden alle in der Aufgabenstellung gefordertern Grundfunktionen sowie einige Erweiterungen, welche hier kurz erläutert werden, umgesetzt. Die erste Erweiterung ist das Speichern der Animation als GIF Datei. Dies geschieht automatisch nach Berechnung der Kinametik. Des weiteren wurde das Importieren von SVG Dateien als alternativer Ansatz zur Erstellung von Mechanismen implementiert. Die Koordinaten der Punkte für das Strandbeest Bein wurden aus [1] entnommen.
+Im Zuge dieses Projekts wurden alle in der Aufgabenstellung geforderten Grundfunktionen sowie einige Erweiterungen, welche hier kurz erläutert werden, umgesetzt. Die erste Erweiterung ist das Speichern der Animation als GIF Datei. Dies geschieht automatisch nach Berechnung der Kinematik. Des Weiteren wurde das Importieren von SVG-Dateien als alternativer Ansatz zur Erstellung von Mechanismen implementiert. Zusätzlich wurde eine Überwachung des Fehlers vom Solver in die Animation eingefügt, um die Lösung besser bewerten zu können. Die Koordinaten der Punkte für das Strandbeest Bein wurden aus [1] entnommen.
+
+### Beispiele
+#### 4-Gelenk aus SVG Importiert: SVG und GIF
+
+<div style="display: flex; align-items: center;">
+    <img src="Beispiele/4-Joint_Example_SVG.svg" alt="Mechanismus 1 SVG" style="width: 500px; margin-right: 20px;">
+    <img src="Beispiele/4-Joint_Example_SVG_Animation.gif" alt="Mechanismus 1 GIF" style="width: 5
+    00px;">
+</div>
+
+#### Strandbeest Bein aus SVG Importiert: SVG und GIF
+
+<div style="display: flex; align-items: center;">
+    <img src="Beispiele\Strandbeest_Example_SVG.svg" alt="Mechanismus 1 SVG" style="width: 500px; margin-right: 20px;">
+    <img src="Beispiele\Strandbeest_Example_SVG.gif" alt="Mechanismus 1 GIF" style="width: 5
+    00px;">
+</div>
+
 
 ### Softwarestruktur
 In Folgender Abbildung ist die grundlegende Softwarestruktur dargestellt. Die Klasse Mechanism enthält hierbei, in leicht abgewandelter Form, einige Funktionen der User Klasse [2] aus der Case Study dieses Semesters.  
