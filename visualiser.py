@@ -50,15 +50,9 @@ class Visualiser:
         if trajectory:
             df = pd.DataFrame(trajectory, columns=["x-Koordinate", "y-Koordinate"])
             buffer = io.BytesIO()
-            df.to_csv(buffer, index=False)  # Standard-Trennzeichen (Komma)
-            buffer.seek(0)  # Zurück zum Anfang der Datei
-
-            # Download-Button in Streamlit
-            st.download_button(
-                label="Bahnkurve als CSV-Datei herunterladen",
-                data=buffer,
-                file_name="daten.csv",
-                mime="text/csv")
+            df.to_csv(buffer, index=False)
+            buffer.seek(0)
+            return buffer
             
         
         

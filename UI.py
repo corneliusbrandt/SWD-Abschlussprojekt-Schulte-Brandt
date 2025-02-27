@@ -142,7 +142,14 @@ elif st.session_state["state"] == "state_solve_mechanism":
                     with col2:
                         visualiser = visualiser.Visualiser(selected_mechanism_name)
                         visualiser.animate_mechanism(solution)
-                        visualiser.save_trajectory_to_csv(solution)
+                        st.download_button(
+                            label="Bahnkurve als CSV-Datei herunterladen",
+                            data=visualiser.save_trajectory_to_csv(solution),
+                            file_name="daten.csv",
+                            mime="text/csv",
+                        )
+
+                        
 
         st.button("Zurück", on_click=go_to_state_start)
         
