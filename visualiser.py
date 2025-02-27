@@ -24,7 +24,7 @@ class Visualiser:
 
         links = self.mechanism_to_visualise.table_links
         for i, p1 in enumerate(self.mechanism_to_visualise.table_points["Punkt"]):
-            print("Data Type p1:", type(p1))
+            # print("Data Type p1:", type(p1))
             for j, p2 in enumerate(self.mechanism_to_visualise.table_points["Punkt"]):
                 if p1 in links and links[p1][j]:
                     G.add_edge(p1, p2)
@@ -36,7 +36,7 @@ class Visualiser:
         for n, p1 in enumerate(self.mechanism_to_visualise.table_points["Bahnkurve"]):
             if p1:
                 point_index = n
-                print(f"Point {n} is a trajectory point.")
+                # print(f"Point {n} is a trajectory point.")
                 trajectory = []
                 for point in solved_points:
                     trajectory.append((point["x-Koordinate"][point_index], point["y-Koordinate"][point_index]))

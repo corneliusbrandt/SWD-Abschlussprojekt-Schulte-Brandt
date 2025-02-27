@@ -40,7 +40,6 @@ class EbeneKinematik:
         self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=0)
         self.data_glieder['Glieder'] = np.delete(self.data_glieder['Glieder'], rotation_index, axis=1)
         self.glieder = np.array(data_glieder['Glieder'])
-        # print("Glieder Matrix:\n", self.glieder)
         self.create_glieder()
 
         self.check_system()
@@ -102,7 +101,7 @@ class EbeneKinematik:
         """
         # print("Data Glieder:\n", self.data_glieder)
         data = np.array(self.data_glieder['Glieder'], dtype=int)
-        # print("Data:\n", data)
+        print("Data:\n", data)
         num_points = len(data)
         connections = []
         
@@ -126,20 +125,27 @@ class EbeneKinematik:
         self.glieder = output_matrix
 
     
-    def cal_length(self):
+    def cal_length(self, gelenke=None):
         """
         Berechnet die Längen der Glieder.
         :return: Array mit den Längen der Glieder
         """
-        gelenke = self.gelenke[~(np.array(self.data_gelenke['Statisch']) & np.array(self.data_gelenke['Kurbel']))].reshape(-1, 1)
-        # print("Gelenke (cal_length):\n", gelenke)
-        L = np.dot(self.glieder, gelenke)
-        # print("L",L)
-        # print("len",len(self.glieder))
-        L.reshape(len(self.glieder) // 2, 2)
-        # print("L Reshape",L)
-        l = np.linalg.norm(L, axis=1)
-        # print("l",l)
+        if gelenke is None:
+            gelenke = self.gelenke[~(np.array(self.data_gelenke['Statisch']) & np.array(self.data_gelenke['Kurbel']))].reshape(-1, 1)
+        else:
+            gelenke = gelenke[~(np.array(self.data_gelenke['Statisch']) & np.array(self.data_gelenke['Kurbel']))].reshape(-1, 1)
+            print("Gelenke von Optimise:\n", gelenke)
+        print("Gelenke (cal_length):\n", gelenke)
+        print("Glieder:\n", self.glieder)
+        L_matrix = np.dot(self.glieder, gelenke)
+        print("L\n",L_matrix)
+        print("len",len(self.glieder))
+        print("len reshape",len(self.glieder) // 2)
+        len_reshape = len(self.glieder) // 2
+        L_matrix = L_matrix.reshape(len_reshape, 2)
+        print("L Reshape\n",L_matrix)
+        l = np.linalg.norm(L_matrix, axis=1)
+        print("l",l)
 
         return l
 
@@ -166,23 +172,28 @@ class EbeneKinematik:
         :return: Array mit allen Punkten für jeden Winkel
         """
         initial_length = self.cal_length()
+        gelenke = self.gelenke
         # print("Initial Length:", initial_length)
         
         def objective_function(free_points):
-            self.gelenke[~(np.array(self.data_gelenke['Statisch']) | np.array(self.data_gelenke['Kurbel']))] = free_points.reshape(-1, 2)
-            lengths = self.cal_length()
+            # Update the positions of the free points in the gelenke array
+            gelenke[~(np.array(self.data_gelenke['Statisch']) | np.array(self.data_gelenke['Kurbel']))] = free_points.reshape(-1, 2)
+            lengths = self.cal_length(gelenke)
             # print("Lengths:", lengths)
+            # print("Lengths:", lengths)
+            # print("Initial Length:", initial_length)
             error = np.sum((lengths - initial_length) ** 2)
+            # print("Error:", error)
             return error
         
         all_points = []
         
         for angle in range(0, 360, self.step_size):
             rotated_point = self.rotate_Point(angle)
-            self.gelenke[[i for i, p in enumerate(self.data_gelenke['Punkt']) if p == self.antrieb][0]] = rotated_point
+            gelenke[[i for i, p in enumerate(self.data_gelenke['Punkt']) if p == self.antrieb][0]] = rotated_point
             
-            free_points_initial = self.gelenke[~(np.array(self.data_gelenke['Statisch']) | np.array(self.data_gelenke['Kurbel']))].flatten()
-            result = minimize(objective_function, free_points_initial, method='BFGS')
+            free_points_initial = gelenke[~(np.array(self.data_gelenke['Statisch']) | np.array(self.data_gelenke['Kurbel']))].flatten()
+            result = minimize(objective_function, free_points_initial, tol=0.05)
             
             if result.success:
                 self.gelenke[~(np.array(self.data_gelenke['Statisch']) | np.array(self.data_gelenke['Kurbel']))] = result.x.reshape(-1, 2)
@@ -275,4 +286,4 @@ class EbeneKinematik:
 # kinematik.solve()
 
 # # Visualize the kinematic system
-# kinematik.visualize()
+# # kinematik.visualize()
