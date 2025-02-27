@@ -148,13 +148,14 @@ elif st.session_state["state"] == "state_solve_mechanism":
                 if st.button("Mechanismus lösen"):
                     selected_mechanism_instance.solve_mechanism()
                     solution = selected_mechanism_instance.kinematics.solved_points
+                    solution_errors = selected_mechanism_instance.kinematics.errors
                     st.success("Der Mechanismus wird gelöst und automatisch in ihrem Download-Ordner gespeichert.")
                     #st.write("Lösung:")
                     #st.write(solution)
                 
                     with col2:
                         visualiser = visualiser.Visualiser(selected_mechanism_name)
-                        visualiser.animate_mechanism(solution)
+                        visualiser.animate_mechanism(solution, solution_errors)
                         st.download_button(
                             label="Bahnkurve als CSV-Datei herunterladen",
                             data=visualiser.save_trajectory_to_csv(solution),

@@ -67,8 +67,8 @@ class Visualiser:
         nx.draw(G, pos, with_labels=True, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
         st.pyplot(fig)
 
-    def animate_mechanism(self, solved_points):
-        # Function for animating the mechanism
+    def animate_mechanism(self, solved_points, errors):
+        # Function for animating the mechanism and plotting the error
 
         # Calculate the radius for the circle around the rotation point
         rotation_index = self.mechanism_to_visualise.kinematics.data_gelenke['Punkt'].index(self.mechanism_to_visualise.kinematics.rotations_Punkt)
@@ -78,7 +78,7 @@ class Visualiser:
         # Calculate the trajectory of the point where the parameter "Bahnkurve" is set to True
         trajectory_array = self.calc_trajectory(solved_points)
 
-        fig, ax = plt.subplots()
+        fig, (ax1, ax2) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
         min_x = min(point["x-Koordinate"][n] for point in solved_points for n in range(len(point["x-Koordinate"])))
         max_x = max(point["x-Koordinate"][n] for point in solved_points for n in range(len(point["x-Koordinate"])))
         min_y = min(point["y-Koordinate"][n] for point in solved_points for n in range(len(point["y-Koordinate"])))
@@ -91,48 +91,47 @@ class Visualiser:
         range_y = (max_y - min_y) * 1.5
 
         # Set the new limits
-        ax.set_xlim(center_x - range_x / 2, center_x + range_x / 2)
-        ax.set_ylim(center_y - range_y / 2, center_y + range_y / 2)
-        ax.set_aspect('equal', adjustable='box')
-        # ax.grid(True)  # Enable grid
-        # ax.axhline(0, color='black',linewidth=0.5)  # X-axis
-        # ax.axvline(0, color='black',linewidth=0.5)  # Y-axis
+        ax1.set_xlim(center_x - range_x / 2, center_x + range_x / 2)
+        ax1.set_ylim(center_y - range_y / 2, center_y + range_y / 2)
+        ax1.set_aspect('equal', adjustable='box')
         G = self.data_to_graph()
         pos = nx.get_node_attributes(G, 'pos')
 
         # Add a circle around the rotation point
         circle = plt.Circle(self.mechanism_to_visualise.kinematics.gelenke[rotation_index], radius, color='r', fill=False)
-        ax.add_artist(circle)
+        ax1.add_artist(circle)
 
         # Add the trajectory
         if trajectory_array:
             x, y = zip(*trajectory_array)
-            trajectory, = ax.plot(x, y, '-', lw=1, color='red')
-            ax.add_artist(trajectory)
+            trajectory, = ax1.plot(x, y, '-', lw=1, color='red')
+            ax1.add_artist(trajectory)
 
-
-        #Draw the mechanism
-        nx.draw(G, pos, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)        
+        # Draw the mechanism
+        nx.draw(G, pos, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax1)
 
         def update_animation(frame):
-            ax.clear()
-            ax.set_xlim(center_x - range_x / 2, center_x + range_x / 2)
-            ax.set_ylim(center_y - range_y / 2, center_y + range_y / 2)
-            ax.add_artist(circle)
+            ax1.clear()
+            ax1.set_xlim(center_x - range_x / 2, center_x + range_x / 2)
+            ax1.set_ylim(center_y - range_y / 2, center_y + range_y / 2)
+            ax1.add_artist(circle)
             if trajectory_array:
-                ax.add_artist(trajectory)
+                ax1.add_artist(trajectory)
             for n, p1 in enumerate(solved_points[frame]["Punkt"]):
                 (x , y) = (solved_points[frame]["x-Koordinate"][n], solved_points[frame]["y-Koordinate"][n])
                 pos[p1] = (x, y)
-            nx.draw(G, pos, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
-            
-            
+            nx.draw(G, pos, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax1)
+
+            # Update error plot
+            ax2.clear()
+            ax2.plot(errors[:frame+1], color='blue')
+            ax2.set_xlim(0, len(solved_points))
+            ax2.set_ylim(0, max(errors) * 1.1)
+            ax2.set_xlabel('Frame')
+            ax2.set_ylabel('Error')
 
         mechanism_animation = animation.FuncAnimation(fig, update_animation, frames=len(solved_points), interval=20)
 
-        #buffer = io.BytesIO()
-        #mechanism_animation.save(buffer, writer="ffmpeg")
-        #buffer.seek(0)
         downloads_path = os.path.join(os.path.expanduser("~"), "Downloads", "mechanism.gif")
         mechanism_animation.save(downloads_path, writer=animation.PillowWriter(fps=10))
         st.image(downloads_path, use_container_width=True)

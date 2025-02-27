@@ -37,6 +37,7 @@ class EbeneKinematik:
         self.step_size = step_size
 
         self.solved_points = None
+        self.erros = None
         data_glieder = {"Glieder": np.array(list(data_glieder.values()))}
         self.data_glieder = data_glieder
         rotation_index = data_gelenke['Punkt'].index(self.rotations_Punkt)
@@ -206,6 +207,7 @@ class EbeneKinematik:
             return error
         
         all_points = []
+        errors = []
         
         for angle in range(0, 360, self.step_size):
             rotated_point = self.rotate_Point(angle)
@@ -220,6 +222,8 @@ class EbeneKinematik:
                 print(f"Optimization failed at angle {angle} degrees.")
             
             all_points.append(self.gelenke.copy())
+            errors.append(objective_function(result.x))
+        
         # print("All Points:\n", all_points)
         self.solved_points = []
         for points in all_points:
@@ -229,6 +233,10 @@ class EbeneKinematik:
             'y-Koordinate': points[:, 1].tolist()
             }
             self.solved_points.append(step_dict)
+        
+        #print("Errors:", errors)
+        
+        self.errors = errors
         
         #return np.array(all_points)
     def set_step_size(self, step_size):
