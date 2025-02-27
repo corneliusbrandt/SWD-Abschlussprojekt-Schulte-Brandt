@@ -1,52 +1,67 @@
 import xml.etree.ElementTree as ET
 import networkx as nx
 import numpy as np
+import svgpathtools
+import tempfile
 import matplotlib.pyplot as plt
 
 def parse_svg(svg_content):
-    root = ET.fromstring(svg_content)
+    """
+    Parses SVG content to extract nodes, edges, and circles, and constructs data structures for further processing.
+    Args:
+        svg_content (str): A string containing the SVG content.
+    Returns:
+        tuple: A tuple containing:
+            - data_gelenke (dict): A dictionary with keys 'Punkt', 'x-Koordinate', 'y-Koordinate', 'Statisch', 'Kurbel', and 'Bahnkurve'.
+              Each key maps to a list of corresponding values extracted from the SVG.
+            - connection_matrix (dict): A dictionary representing the connection matrix. The keys are string representations of node indices,
+              and the values are lists of boolean values indicating connections between nodes.
+    """
 
-    # Check if the SVG has a namespace
-    if '}' in root.tag:
-        namespace = {'svg': root.tag.split('}')[0].strip('{')}
-    else:
-        namespace = {}
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".svg") as temp_svg_file:
+        temp_svg_file.write(svg_content.encode('utf-8'))
+        temp_svg_file_path = temp_svg_file.name
+
+    paths, attributes, svg_attributes = svgpathtools.svg2paths2(temp_svg_file_path, return_svg_attributes=True)
 
     nodes = set()
     edges = []
     circles = []
+    tolerance = 1e-6  # Tolerance to filter out zero-length lines
 
-    # Extract all line elements
-    lines = root.findall('.//svg:path', namespace)
-    # print(f"Found {len(lines)} path elements")
-    for line in lines:
-        d = line.get('d')
-        if d:
-            points = d.split('L')
-            for i in range(len(points) - 1):
-                x1, y1 = map(float, points[i].strip('ML').split(','))
-                x2, y2 = map(float, points[i + 1].strip('ML').split(','))
-                nodes.add((x1, -y1))  # Flip y-coordinate
-                nodes.add((x2, -y2))  # Flip y-coordinate
-                edges.append(((x1, -y1), (x2, -y2)))  # Flip y-coordinates
+    for path in paths:
+        for segment in path:
+            if isinstance(segment, svgpathtools.Line):
+                start = segment.start
+                end = segment.end
 
-    # Extract all circle elements
-    circles_elements = root.findall('.//svg:circle', namespace)
-    # print(f"Found {len(circles_elements)} circle elements")
-    for circle in circles_elements:
-        cx, cy = float(circle.get('cx')), float(circle.get('cy'))
-        circles.append((cx, -cy))  # Flip y-coordinate
+                # Skip zero-length lines
+                if abs(start - end) < tolerance:
+                    continue
 
-    # Prepare the data dictionary
+                nodes.add((start.real, -start.imag))  # Flip y-coordinate
+                nodes.add((end.real, -end.imag))  # Flip y-coordinate
+                edges.append(((start.real, -start.imag), (end.real, -end.imag)))  # Flip y-coordinate
+
+    for attribute in attributes:
+        if 'cx' in attribute and 'cy' in attribute:
+            cx = float(attribute['cx'])
+            cy = float(attribute['cy'])
+            circles.append((cx, -cy))  # Flip y-coordinate
+
+    print("Nodes:", nodes)
+    print("Edges:", edges)
+    print("Circles:", circles)
+
     data_gelenke = {
         'Punkt': [],
         'x-Koordinate': [],
         'y-Koordinate': [],
         'Statisch': [],
-        'Kurbel': []
+        'Kurbel': [],
+        'Bahnkurve': []
     }
 
-    # Add nodes to the data dictionary
     node_list = list(nodes)
     for i, (x, y) in enumerate(node_list):
         data_gelenke['Punkt'].append(f"{i}")
@@ -54,26 +69,25 @@ def parse_svg(svg_content):
         data_gelenke['y-Koordinate'].append(y)
         data_gelenke['Statisch'].append(False)
         data_gelenke['Kurbel'].append(False)
+        data_gelenke['Bahnkurve'].append(False)
 
-    # Add circle center points to the data dictionary
     for cx, cy in circles:
         data_gelenke['Punkt'].append(f"{len(node_list)}")
         data_gelenke['x-Koordinate'].append(cx)
         data_gelenke['y-Koordinate'].append(cy)
         data_gelenke['Statisch'].append(True)
         data_gelenke['Kurbel'].append(True)
+        data_gelenke['Bahnkurve'].append(False)
 
-    # Create connection matrix
     connection_matrix = [[0] * (len(node_list) + 1) for _ in range(len(node_list))]
     for (x1, y1), (x2, y2) in edges:
         i = node_list.index((x1, y1))
         j = node_list.index((x2, y2))
         connection_matrix[i][j] = 1
-        connection_matrix[j][i] = 1  # Assuming undirected graph
-    connection_matrix = np.triu(connection_matrix, k=1).astype(bool)  # Convert 1 and 0 to True and False
+        connection_matrix[j][i] = 1  
+    connection_matrix = np.triu(connection_matrix, k=1).astype(bool)  
 
-    # Convert connection matrix to dict
-    number_of_points = len(node_list)+1
+    number_of_points = len(node_list) + 1
     links = {f"{i}": [False] * number_of_points for i in range(number_of_points)}
     for i, row in enumerate(connection_matrix):
         for j, val in enumerate(row):
@@ -81,14 +95,4 @@ def parse_svg(svg_content):
 
     connection_matrix = links
     
-    # print("data_gelenke:\n", data_gelenke)
-    # print("data_gelenke Tyoe:", type(data_gelenke))
-    # print("connection_matrix:\n", connection_matrix)
-    # print("connection_matrix Type:", type(connection_matrix))
     return data_gelenke, connection_matrix
-
-
-# pathSVG = "Test.svg"
-# data_gelenke, connection_matrix = parse_svg(pathSVG)
-# print(data_gelenke)
-# print(connection_matrix)    
