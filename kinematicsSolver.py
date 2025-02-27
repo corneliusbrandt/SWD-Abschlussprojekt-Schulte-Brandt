@@ -4,12 +4,15 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 class EbeneKinematik:
-    def __init__(self, data_gelenke, data_glieder, step_size=1):	
+    def __init__(self, data_gelenke, data_glieder, step_size=1, temp=False):	
         """
         Initialisiert das Kinematik-System.
-        :param data: Dictionary mit den Schlüsseln 'Punkt', 'X-Koordinate', 'Y-Koordinate', 'Statisch', 'Kurbel' und 'Glieder'
+        :param data_gelenke: Dictionary mit den Schlüsseln 'Punkt', 'X-Koordinate', 'Y-Koordinate', 'Statisch', 'Kurbel'
+        :param data_glieder: Dictionary mit dem Schlüssel 'Glieder'
+        :param step_size: Schrittweite in Grad
         """
-        self.check_input(data_gelenke, data_glieder)
+        if not temp:
+            self.check_input(data_gelenke, data_glieder)
         
         self.data_gelenke = data_gelenke
         
@@ -42,12 +45,13 @@ class EbeneKinematik:
         self.glieder = np.array(data_glieder['Glieder'])
         self.create_glieder()
 
-        self.check_system()
+        if not temp:
+            self.check_system()
 
     def check_input(self, data_gelenke, data_glieder):
         """
         Überprüft, ob die Eingabedaten gültig sind.
-        :param data_gelenke: Dictionary mit den Schlüsseln 'Punkt', 'X-Koordinate', 'Y-Koordinate', 'Statisch', 'Kurbel'
+        :param data_gelenke: Dictionary mit den Schlüsseln 'Punkt', 'x-Koordinate', 'y-Koordinate', 'Statisch', 'Kurbel'
         :param data_glieder: Dictionary mit dem Schlüssel 'Glieder'
         :return: True, wenn die Eingabedaten gültig sind, sonst False
         """
@@ -59,6 +63,16 @@ class EbeneKinematik:
             raise ValueError("data_gelenke must contain the keys 'Punkt', 'x-Koordinate', 'y-Koordinate', 'Statisch', and 'Kurbel'.")
         if not data_glieder:
             raise ValueError("data_glieder must not be empty.")
+        if not data_gelenke:
+            raise ValueError("data_gelenke must not be empty.")
+        if not any(data_gelenke['Kurbel']):
+            raise ValueError("Es muss mindestens einen Punkt geben, der 'Kurbel' ist.")
+        if not any(data_gelenke['Statisch']):
+            raise ValueError("Es muss mindestens einen Punkt geben, der 'Statisch' ist.")
+        if not any(k and not s for k, s in zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])):
+            raise ValueError("Es muss mindestens einen Punkt geben, der 'Kurbel' ist und nicht 'Statisch'.")
+        if not any(not k and s for k, s in zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])):
+            raise ValueError("Es muss mindestens einen Punkt geben, der 'Statisch' ist und nicht 'Kurbel'.")
         if len(data_gelenke['Punkt']) != len(data_gelenke['x-Koordinate']) or len(data_gelenke['Punkt']) != len(data_gelenke['y-Koordinate']) or len(data_gelenke['Punkt']) != len(data_gelenke['Statisch']) or len(data_gelenke['Punkt']) != len(data_gelenke['Kurbel']):
             raise ValueError("The lengths of the lists in data_gelenke must be equal.")
         if not any(k and s for k, s in zip(data_gelenke['Kurbel'], data_gelenke['Statisch'])):
@@ -80,19 +94,24 @@ class EbeneKinematik:
             raise ValueError("Der feste Punkt und der Antrieb dürfen nicht identisch sein.")
         if not self.rotations_Punkt:
             raise ValueError("Es muss mindestens einen Rotationspunkt geben.")
-        #if np.sum(self.data_glieder['Glieder']) != len(self.gelenke) - 2:
-            #raise ValueError("Das System ist nicht vollständig.")
+        if len(self.glieder)/2 > self.calc_constraints():               # /2 weil die Glieder Matrix doppelt so viele Zeilen hat wie die Anzahl der Glieder
+            raise ValueError("Das System ist überbestimmt.")
+        if len(self.glieder)/2 < self.calc_constraints():
+            raise ValueError("Das System ist unterbestimmt.")
+        if len(self.glieder)/2 == 0:
+            raise ValueError("Das System ist nicht vollständig.")
+
         
         
         return True
     
     def calc_constraints(self):
-        m_stat = 2
-        m_dyn = 2
-        m = m_stat + m_dyn
-        m_normal = 10
-        m_total = m + m_normal
-        return m_total
+        n = len(self.data_gelenke['Punkt']) - 1#damit der Rotationspunkt nicht mitgezählt wird
+        # print("n",n)
+        benötigte_glieder = n * 2 - 4
+        # print("benötigte_glieder",benötigte_glieder)
+        return benötigte_glieder
+
     
     def create_glieder(self):
         """
@@ -101,7 +120,7 @@ class EbeneKinematik:
         """
         # print("Data Glieder:\n", self.data_glieder)
         data = np.array(self.data_glieder['Glieder'], dtype=int)
-        print("Data:\n", data)
+        # print("Data:\n", data)
         num_points = len(data)
         connections = []
         
@@ -134,18 +153,18 @@ class EbeneKinematik:
             gelenke = self.gelenke[~(np.array(self.data_gelenke['Statisch']) & np.array(self.data_gelenke['Kurbel']))].reshape(-1, 1)
         else:
             gelenke = gelenke[~(np.array(self.data_gelenke['Statisch']) & np.array(self.data_gelenke['Kurbel']))].reshape(-1, 1)
-            print("Gelenke von Optimise:\n", gelenke)
-        print("Gelenke (cal_length):\n", gelenke)
-        print("Glieder:\n", self.glieder)
+            # print("Gelenke von Optimise:\n", gelenke)
+        # print("Gelenke (cal_length):\n", gelenke)
+        # print("Glieder:\n", self.glieder)
         L_matrix = np.dot(self.glieder, gelenke)
-        print("L\n",L_matrix)
-        print("len",len(self.glieder))
-        print("len reshape",len(self.glieder) // 2)
+        # print("L\n",L_matrix)
+        # print("len",len(self.glieder))
+        # print("len reshape",len(self.glieder) // 2)
         len_reshape = len(self.glieder) // 2
         L_matrix = L_matrix.reshape(len_reshape, 2)
-        print("L Reshape\n",L_matrix)
+        # print("L Reshape\n",L_matrix)
         l = np.linalg.norm(L_matrix, axis=1)
-        print("l",l)
+        # print("l",l)
 
         return l
 
@@ -212,37 +231,45 @@ class EbeneKinematik:
             self.solved_points.append(step_dict)
         
         #return np.array(all_points)
+    def set_step_size(self, step_size):
+        """
+        Setzt die Schrittweite.
+        :param step_size: Schrittweite in Grad
+        :return: None
+        """
+        self.step_size = step_size
       
     
-    def visualize(self):
-        fig, ax = plt.subplots()
-        ax.set_xlim(-50, 50)
-        ax.set_ylim(-50, 50)
-        ax.set_aspect('equal', adjustable='box')
-        lines, = ax.plot([], [], 'o-', lw=2)
+    # def visualize(self):
+    #     fig, ax = plt.subplots()
+    #     ax.set_xlim(-50, 50)
+    #     ax.set_ylim(-50, 50)
+    #     ax.set_aspect('equal', adjustable='box')
+    #     lines, = ax.plot([], [], 'o-', lw=2)
 
-        # Calculate the radius for the circle
-        rotation_index = self.data_gelenke['Punkt'].index(self.rotations_Punkt)
-        antrieb_index = self.data_gelenke['Punkt'].index(self.antrieb)
-        radius = np.linalg.norm(self.gelenke[rotation_index] - self.gelenke[antrieb_index])
+    #     # Calculate the radius for the circle
+    #     rotation_index = self.data_gelenke['Punkt'].index(self.rotations_Punkt)
+    #     antrieb_index = self.data_gelenke['Punkt'].index(self.antrieb)
+    #     radius = np.linalg.norm(self.gelenke[rotation_index] - self.gelenke[antrieb_index])
 
-        # Add a circle around the rotation point
-        circle = plt.Circle(self.gelenke[rotation_index], radius, color='r', fill=False)
-        ax.add_artist(circle)
+    #     # Add a circle around the rotation point
+    #     circle = plt.Circle(self.gelenke[rotation_index], radius, color='r', fill=False)
+    #     ax.add_artist(circle)
 
-        def init():
-            lines.set_data([], [])
-            return lines,
+    #     def init():
+    #         lines.set_data([], [])
+    #         return lines,
 
-        def update(frame):
-            all_points = self.solve()
-            x_data = all_points[frame][:, 0]
-            y_data = all_points[frame][:, 1]
-            lines.set_data(x_data, y_data)
-            return lines,
+    #     def update(frame):
+    #         all_points = self.solve()
+    #         x_data = all_points[frame][:, 0]
+    #         y_data = all_points[frame][:, 1]
+    #         lines.set_data(x_data, y_data)
+    #         return lines,
 
-        ani = animation.FuncAnimation(fig, update, frames=len(range(0, 360, self.step_size)), init_func=init, blit=True)
-        plt.show()
+    #     ani = animation.FuncAnimation(fig, update, frames=len(range(0, 360, self.step_size)), init_func=init, blit=True)
+    #     plt.show()
+
 
 
 
