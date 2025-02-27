@@ -36,24 +36,36 @@ if st.session_state["state"] == "state_start":
 
 elif st.session_state["state"] == "state_create_mechanism":
     st.header("Neuen Mechanismus erstellen")
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        mechanism_name = st.text_input("Bitte hier Name des Mechanismus eingeben")
+        number_of_points = st.number_input("Anzahl der Punkte", min_value=1, step=1, value=4)
+        points = {
+            "Punkt": [f"{i}" for i in range(number_of_points)],
+            "x-Koordinate": [0 for i in range(number_of_points)],
+            "y-Koordinate": [0 for i in range(number_of_points)],
+            "Statisch": [False for i in range(number_of_points)],
+            "Kurbel" : [False for i in range(number_of_points)],
+            "Bahnkurve": [False for i in range(number_of_points)]
+        }
 
-    mechanism_name = st.text_input("Bitte hier Name des Mechanismus eingeben")
-    number_of_points = st.number_input("Anzahl der Punkte", min_value=1, step=1, value=4)
-    points = {
-        "Punkt": [f"{i}" for i in range(number_of_points)],
-        "x-Koordinate": [0 for i in range(number_of_points)],
-        "y-Koordinate": [0 for i in range(number_of_points)],
-        "Statisch": [False for i in range(number_of_points)],
-        "Kurbel" : [False for i in range(number_of_points)],
-        "Bahnkurve": [False for i in range(number_of_points)]
-    }
+        st.write("Bitte hier Punkte eingetragen")
+        table_points = st.data_editor(points) 
 
-    st.write("Bitte hier Punkte eingetragen")
-    table_points = st.data_editor(points) 
-
-    st.write("Bitte hier Verbindungen zwischen den Punkten eingetragen")
-    links = {f"{i}": [False] * number_of_points for i in range(number_of_points)}
-    table_links = st.data_editor(links, hide_index=False)
+        st.write("Bitte hier Verbindungen zwischen den Punkten eingetragen")
+        links = {f"{i}": [False] * number_of_points for i in range(number_of_points)}
+        table_links = st.data_editor(links, hide_index=False)
+    col2.write("Visualisierung des Mechanismus")
+    with col2:
+        # temp_mechanism_instance = mechanism.Mechanism("Preview", data_glieder, data_gelenke)
+        # visualiser = visualiser.Visualiser("Preview", temp_mechanism_instance)
+        # visualiser.draw_mechanism()'
+        try:
+            temp_mechanism_instance = mechanism.Mechanism("Preview", points, links, temp=True)
+            visualiser = visualiser.Visualiser("Preview", temp_mechanism_instance)
+            visualiser.draw_mechanism()
+        except Exception as e:
+            st.warning(f"Warnung: {e}")
 
 
     #if st.button("Vorschau des Mechanismus"):
@@ -94,7 +106,7 @@ elif st.session_state["state"] == "state_load_mechanism":
         col2.write("Visualisierung des Mechanismus")
         with col2:
             try:
-                temp_mechanism_instance = mechanism.Mechanism("Preview", temp_table_points, temp_table_links)
+                temp_mechanism_instance = mechanism.Mechanism("Preview", temp_table_points, temp_table_links, temp=True)
                 visualiser = visualiser.Visualiser("Preview", temp_mechanism_instance)
                 visualiser.draw_mechanism()
             except Exception as e:
@@ -107,7 +119,6 @@ elif st.session_state["state"] == "state_load_mechanism":
                 loaded_mechanism_instance.table_links = temp_table_links
                 loaded_mechanism_instance.store_data()
                 st.success("Mechanismus gespeichert")
-                st.rerun()
             except Exception as e:
                 st.error(f"Fehler beim Speichern des Mechanismus: {e}")
 
@@ -125,6 +136,8 @@ elif st.session_state["state"] == "state_solve_mechanism":
             with col1:
                 selected_mechanism_name = st.selectbox("Mechanismus auswählen", [mech.name for mech in mechanism_list])
                 selected_mechanism_instance = mechanism.Mechanism.find_by_attribute("name", selected_mechanism_name)
+                step_size = st.number_input("Schrittweite für die Lösung", min_value=1, step=1, value=1)
+                selected_mechanism_instance.kinematics.set_step_size(step_size)
 
                 st.write(f"Name: {selected_mechanism_instance.name}")
                 st.write("Punkte:")
@@ -177,14 +190,27 @@ elif st.session_state["state"] == "state_import_svg":
         
         with col1:
             st.write("Punkte:")
-            data_glieder = st.data_editor(parsed_data_gelenke)
-            print("Glieder Type:", type(data_glieder))
-            print("Glieder:", data_glieder)
+            data_gelenke = st.data_editor(parsed_data_gelenke)
+            # print("Glieder Type:", type(data_gelenke))
+            # print("Glieder:", data_gelenke)
+
 
             st.write("Verbindungen:")
-            data_gelenke = st.data_editor(parsed_data_glieder, hide_index=False)
-            print("Gelenke Type:", type(data_gelenke))
-            print("Gelenke:", data_gelenke)
+            data_glieder = st.data_editor(parsed_data_glieder, hide_index=False)
+            # print("Gelenke Type:", type(data_glieder))
+            # print("Gelenke:", data_glieder)
+
+            # selected_point = st.selectbox("Punkt zum Löschen auswählen", data_gelenke["Punkt"])
+            
+            # if st.button("Punkt löschen"):
+            #     if selected_point in data_gelenke["Punkt"]:
+            #         index_to_delete = data_gelenke["Punkt"].index(selected_point)
+            #         data_glieder = {key: [val for i, val in enumerate(values) if i != index_to_delete] for key, values in data_glieder.items()}
+            #         data_gelenke = {key: [val for i, val in enumerate(values) if i != index_to_delete] for key, values in data_gelenke.items()}
+            #         data_gelenke = {key: [val for i, val in enumerate(values) if i != index_to_delete] for key, values in data_gelenke.items()}
+            #         st.success(f"Punkt {selected_point} wurde gelöscht")
+            #     else:
+            #         st.warning(f"Punkt {selected_point} nicht gefunden")
         
         col2.write("Visualisierung des Mechanismus")
         with col2:
@@ -192,7 +218,7 @@ elif st.session_state["state"] == "state_import_svg":
             # visualiser = visualiser.Visualiser("Preview", temp_mechanism_instance)
             # visualiser.draw_mechanism()'
             try:
-                temp_mechanism_instance = mechanism.Mechanism("Preview", data_glieder, data_gelenke)
+                temp_mechanism_instance = mechanism.Mechanism("Preview", data_gelenke, data_glieder, temp=True)
                 visualiser = visualiser.Visualiser("Preview", temp_mechanism_instance)
                 visualiser.draw_mechanism()
             except Exception as e:
@@ -200,7 +226,7 @@ elif st.session_state["state"] == "state_import_svg":
 
         if st.button("Speichern"):
             try:
-                mechanism.Mechanism(mechanism_name, data_glieder, data_gelenke).store_data()
+                mechanism.Mechanism(mechanism_name, data_gelenke, data_glieder).store_data()
                 st.success("Mechanismus gespeichert")
             except Exception as e:
                 st.error(f"Fehler beim Speichern des Mechanismus: {e}")
