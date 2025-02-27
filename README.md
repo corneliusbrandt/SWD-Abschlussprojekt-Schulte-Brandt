@@ -16,7 +16,7 @@ Hier können bereits erstellte Mechanismen geladen und bearbeitet werden. Das Be
 In diesem Menü kann der ausgewählte Mechanismus durch drücken von "Mechanismus lösen" gelöst und die Bewegung animiert werden. Nach der Berechnung, welche einige Zeit in Anspruch nehmen kann, wird die Animation angezeigt und auch automatisch als GIF Datei in Ihrem Downloads Ordner gespeichert. Durch drücken von "Bahnkurve als CSV-Datei herunterladen" kann die angezeigte Bahnkurve in eine .csv Datei gespeichert werden. Wichtig ist, dass in diesem Menü der Mechanismus nicht verändert werden kann.
 
 ### SVG importieren
-Hier können SVG Dateien importiert werden um einen neuen Mechanismus zu erstellen.
+Hier können SVG Dateien importiert werden um einen neuen Mechanismus zu erstellen. Nachdem die Datei importiert wurde können Punkte und Verbindungen noch manuell bearbeitet werden. Der Kreismittelpunkt wird hierbei durch ein Kreisobjekt definiert und die Verbindungen durch Linienobjekte. Statische und der Kurbel zugehörige Punkte müssen manuell eingestellt werden. Daraufhin kann man den Mechanismus speichern.
 
 ## Projekt-Dokumentation
 ### Umgesetzte Erweiterungen
