@@ -63,6 +63,7 @@ class Visualiser:
         pos = nx.get_node_attributes(G, 'pos')
 
         fig, ax = plt.subplots()
+        ax.set_aspect('equal', adjustable='box')
         nx.draw(G, pos, with_labels=True, node_size=50, node_color='red', edge_color='blue', width=2.0, ax=ax)
         st.pyplot(fig)
 
@@ -78,12 +79,24 @@ class Visualiser:
         trajectory_array = self.calc_trajectory(solved_points)
 
         fig, ax = plt.subplots()
-        ax.set_xlim(-50, 50)
-        ax.set_ylim(-70, 50)
+        min_x = min(point["x-Koordinate"][n] for point in solved_points for n in range(len(point["x-Koordinate"])))
+        max_x = max(point["x-Koordinate"][n] for point in solved_points for n in range(len(point["x-Koordinate"])))
+        min_y = min(point["y-Koordinate"][n] for point in solved_points for n in range(len(point["y-Koordinate"])))
+        max_y = max(point["y-Koordinate"][n] for point in solved_points for n in range(len(point["y-Koordinate"])))
+
+        # Calculate the center and range
+        center_x = (min_x + max_x) / 2
+        center_y = (min_y + max_y) / 2
+        range_x = (max_x - min_x) * 1.5
+        range_y = (max_y - min_y) * 1.5
+
+        # Set the new limits
+        ax.set_xlim(center_x - range_x / 2, center_x + range_x / 2)
+        ax.set_ylim(center_y - range_y / 2, center_y + range_y / 2)
         ax.set_aspect('equal', adjustable='box')
-        ax.grid(True)  # Enable grid
-        ax.axhline(0, color='black',linewidth=0.5)  # X-axis
-        ax.axvline(0, color='black',linewidth=0.5)  # Y-axis
+        # ax.grid(True)  # Enable grid
+        # ax.axhline(0, color='black',linewidth=0.5)  # X-axis
+        # ax.axvline(0, color='black',linewidth=0.5)  # Y-axis
         G = self.data_to_graph()
         pos = nx.get_node_attributes(G, 'pos')
 
@@ -103,12 +116,8 @@ class Visualiser:
 
         def update_animation(frame):
             ax.clear()
-            ax.set_xlim(-50, 50)
-            ax.set_ylim(-70, 50)
-            ax.set_aspect('equal', adjustable='box')
-            ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)  # Enable grid
-            ax.axhline(0, color='black',linewidth=0.5)  # X-axis
-            ax.axvline(0, color='black',linewidth=0.5)  # Y-axis
+            ax.set_xlim(center_x - range_x / 2, center_x + range_x / 2)
+            ax.set_ylim(center_y - range_y / 2, center_y + range_y / 2)
             ax.add_artist(circle)
             if trajectory_array:
                 ax.add_artist(trajectory)
