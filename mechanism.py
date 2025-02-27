@@ -5,12 +5,14 @@ from kinematicsSolver import EbeneKinematik
 class Mechanism:
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json')).table('mechanisms')
 
-    def __init__(self, name, table_points, table_links) -> None:
+    def __init__(self, name, table_points, table_links, temp=False) -> None:
         """Create a new mechanism based on the given name"""
         self.name = name
+        if not name:
+            raise ValueError("Name must not be empty.")
         self.table_points = table_points
         self.table_links = table_links
-        self.kinematics = EbeneKinematik(table_points, table_links)
+        self.kinematics = EbeneKinematik(table_points, table_links, temp=temp)
 
     def store_data(self) -> None:
         """Save the mechanism to the database"""
@@ -64,7 +66,7 @@ class Mechanism:
     def solve_mechanism(self) -> EbeneKinematik:
         """Solve the mechanism"""
         self.kinematics.solve()
-        print("Solved points:", self.kinematics.solved_points)
+        # print("Solved points:", self.kinematics.solved_points)
         return self.kinematics
 
 
