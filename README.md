@@ -26,6 +26,9 @@ Im Zuge dieses Projekts wurden alle in der Aufgabenstellung gefordertern Grundfu
 In Folgender Abbildung ist die grundlegende Softwarestruktur dargestellt. Die Klasse Mechanism enthält hierbei, in leicht abgewandelter Form, einige Funktionen der User Klasse [2] aus der Case Study dieses Semesters.  
 ![UML_Diagramm](UML_Diagramm.png)
 
+### Deployte App
+Die App wurde auf die Streamlit Community Cloud deployed und ist unter folgendem Link zu finden: [Streamlit-App](https://swd-abschlussprojekt-schulte-brandt-8rffwlobkyfw5ncp6qzk4a.streamlit.app/).
+
 ### Quellen
 [1] Smuda, Kevin: [Strandbeest-Bein](https://www.geogebra.org/m/kzg4km9q), aufgerufen am 26.02.25.  
 [2] Huber, Julian; Panny, Matthias: [users.py](https://mrp123.github.io/MCI-MECH-B-3-SWD-SWD-ILV/04_Case_Study_I/Examples/src/), aufgerufen am 26.02.25.
